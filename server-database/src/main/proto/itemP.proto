@@ -1,0 +1,18 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_multiple_files = true;
+option java_package = "sep3.server";
+option java_outer_classname = "ItemProto";
+
+
+message ItemP {
+  string name = 1;
+  double price =2;
+}
+
+service ItemService {
+  rpc postItem(ItemP) returns (ItemP);
+}
+
