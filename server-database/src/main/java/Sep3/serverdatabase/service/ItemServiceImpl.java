@@ -22,12 +22,18 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
 
     @Override
     public void postItem(ItemP request,StreamObserver<ItemP> responseObserver ){
-        Item item = new Item();
 
-        item.setName(request.getName());
-        item.setPrice(item.getPrice());
 
-        repository.save(item);
-        responseObserver.onCompleted();
+          try {
+              Item item = new Item(request.getName(),request.getPrice());
+              repository.save(item);
+              responseObserver.onNext(request);
+              responseObserver.onCompleted();
+          }
+          catch (Exception e){
+              e.getMessage();
+              responseObserver.onError(new Throwable("Could not add item to the database"));
+          }
+
     }
 }

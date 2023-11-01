@@ -16,8 +16,10 @@ public class Item {
             strategy = GenerationType.SEQUENCE,
             generator = "item_sequence"
     )
+    private int id;
     private String name;
     private double price;
+
 
 
     public Item() {
