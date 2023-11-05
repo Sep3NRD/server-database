@@ -81,6 +81,7 @@ public class Costumer {
                 ", lastName='" + lastName + '\'' +
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
+                ", address=" + address +
                 '}';
     }
 }
