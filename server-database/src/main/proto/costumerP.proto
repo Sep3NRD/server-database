@@ -8,15 +8,24 @@ option java_package = "sep3.server";
 option java_outer_classname = "ItemProto";
 
 
-message ItemP {
+message costumerP {
   string name = 1;
   double price =2;
   int32 stock =3;
   string category=4;
   string description=5;
+  Address address =6;
+}
+message Address {
+  string door_number = 1;
+  string street = 2;
+  string city = 3;
+  string state = 4;
+  string postal_code = 5;
+  string country = 6;
 }
 
-service ItemService {
-  rpc postItem(ItemP) returns (ItemP);
+service costumerService {
+  rpc createCostumer(costumerP) returns (costumerP);
+  rpc getCostumerById(google.protobuf.Int32Value) returns (costumerP);
 }
-

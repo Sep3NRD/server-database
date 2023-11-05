@@ -25,7 +25,14 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
 
 
           try {
-              Item item = new Item(request.getName(),request.getPrice());
+              Item item = new Item();
+
+              item.setCategory(request.getCategory());
+              item.setDescription(request.getDescription());
+              item.setStock(request.getStock());
+              item.setPrice(item.getPrice());
+              item.setName(request.getName());
+
               repository.save(item);
               responseObserver.onNext(request);
               responseObserver.onCompleted();
