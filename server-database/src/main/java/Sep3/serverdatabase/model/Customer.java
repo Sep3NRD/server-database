@@ -4,17 +4,17 @@ import jakarta.persistence.*;
 
 @Entity
 @Table
-public class Costumer {
+public class Customer {
 
     @Id
     @SequenceGenerator(
-            name = "costumer_sequence",
-            sequenceName = "costumer_sequence",
+            name = "customer_sequence",
+            sequenceName = "customer_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "costumer_sequence"
+            generator = "customer_sequence"
     )
 
     private int id;
@@ -26,10 +26,10 @@ public class Costumer {
     private Address address;
 
 
-    public Costumer() {
+    public Customer() {
     }
 
-    public Costumer(String firstName, String lastName, String userName, String password, Address address) {
+    public Customer(String firstName, String lastName, String userName, String password, Address address) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;

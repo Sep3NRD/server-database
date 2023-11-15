@@ -1,0 +1,46 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "Application";
+option java_multiple_files = true;
+option java_package = "sep3.server";
+option java_outer_classname = "CostumerProto";
+
+message AddressP {
+  int32 door_number = 1;
+  string street = 2;
+  string city = 3;
+  string state = 4;
+  int32 postal_code = 5;
+  string country = 6;
+}
+
+message CustomerP {
+  int32 id = 1;
+  string username = 2;
+  string password = 3;
+  string firstName = 4;
+  string lastName = 5;
+  AddressP address = 6;
+}
+
+message GetCustomerRequest {
+  string username = 1;
+  string password = 2;
+}
+message GetCustomerByUsername{
+  string username=1;
+}
+
+message CustomerResponseP {
+  CustomerP customer = 1;
+}
+
+service CustomerService {
+  rpc createCustomer(CustomerP) returns (CustomerResponseP){};
+  rpc getCustomer(GetCustomerRequest) returns (CustomerResponseP){};
+  rpc getCustomerByUsername(GetCustomerByUsername ) returns (CustomerResponseP){};
+  rpc updateCustomer(CustomerP) returns (CustomerResponseP){};
+  rpc deleteCustomer(google.protobuf.StringValue) returns (google.protobuf.Empty){};
+}

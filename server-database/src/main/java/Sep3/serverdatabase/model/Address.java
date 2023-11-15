@@ -17,14 +17,14 @@ public class Address {
             generator = "address_sequence"
     )
         private int id;
-        private String doorNumber;
+        private int doorNumber;
         private String street;
         private String city;
         private String state;
-        private String postalCode;
+        private int postalCode;
         private String country;
 
-        public Address(String doorNumber, String street, String city, String state, String postalCode, String country) {
+        public Address(int doorNumber, String street, String city, String state, int postalCode, String country) {
             this.doorNumber = doorNumber;
             this.street = street;
             this.city = city;
@@ -37,11 +37,11 @@ public class Address {
 
     }
 
-    public String getDoorNumber() {
+    public int getDoorNumber() {
             return doorNumber;
         }
 
-        public void setDoorNumber(String doorNumber) {
+        public void setDoorNumber(int doorNumber) {
             this.doorNumber = doorNumber;
         }
 
@@ -69,11 +69,11 @@ public class Address {
             this.state = state;
         }
 
-        public String getPostalCode() {
+        public int getPostalCode() {
             return postalCode;
         }
 
-        public void setPostalCode(String postalCode) {
+        public void setPostalCode(int postalCode) {
             this.postalCode = postalCode;
         }
 

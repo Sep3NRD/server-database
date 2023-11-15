@@ -1,4 +1,4 @@
-package Sep3.serverdatabase.service;
+package Sep3.serverdatabase.service.Implementations;
 
 
 import Sep3.serverdatabase.model.Item;
