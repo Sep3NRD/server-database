@@ -37,6 +37,10 @@ public class Customer {
         this.address = address;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getFirstName() {
         return firstName;
     }
