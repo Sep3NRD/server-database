@@ -23,7 +23,6 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
     @Override
     public void postItem(ItemP request,StreamObserver<ItemP> responseObserver ){
 
-
           try {
               Item item = new Item();
 
@@ -34,6 +33,8 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
               item.setName(request.getName());
 
               repository.save(item);
+              System.out.println("Server>>>>Item....."+item );
+
               responseObserver.onNext(request);
               responseObserver.onCompleted();
           }
