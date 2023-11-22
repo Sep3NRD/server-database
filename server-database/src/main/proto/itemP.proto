@@ -8,12 +8,12 @@ option java_package = "sep3.server";
 option java_outer_classname = "ItemProto";
 
 
-message ItemP {
-  string name = 1;
-  double price =2;
-  int32 stock =3;
-  string category=4;
-  string description=5;
+message ItemP{
+  string name=1;
+  string description = 2;
+  string category = 3;
+  double price = 4;
+  int32 stock = 5;
 }
 
 service ItemService {

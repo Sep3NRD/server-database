@@ -21,27 +21,34 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
 
 
     @Override
-    public void postItem(ItemP request,StreamObserver<ItemP> responseObserver ){
+    public void postItem(ItemP request, StreamObserver<ItemP> responseObserver ){
 
-          try {
-              Item item = new Item();
+        try {
+            // Create a new Item instance to be saved in the repository
+            Item item = new Item();
 
-              item.setCategory(request.getCategory());
-              item.setDescription(request.getDescription());
-              item.setStock(request.getStock());
-              item.setPrice(item.getPrice());
-              item.setName(request.getName());
+            // Set properties of the Item from the request
+            item.setCategory(request.getCategory());
+            item.setDescription(request.getDescription());
+            item.setStock(request.getStock());
+            item.setPrice(request.getPrice());
+            item.setName(request.getName());
 
-              repository.save(item);
-              System.out.println("Server>>>>Item....."+item );
+            // Save the Item to the repository
+            repository.save(item);
 
-              responseObserver.onNext(request);
-              responseObserver.onCompleted();
-          }
-          catch (Exception e){
-              e.getMessage();
-              responseObserver.onError(new Throwable("Could not add item to the database"));
-          }
+            // Notify the client that the item has been successfully added
+            responseObserver.onNext(request);
+            responseObserver.onCompleted();
+        }
+        catch (Exception e){
+            // Handle exceptions that may occur during item addition
+            e.getMessage();
+
+            // Notify the client about the error and provide a generic error message
+            responseObserver.onError(new Throwable("Could not add item to the database"));
+        }
 
     }
+
 }
