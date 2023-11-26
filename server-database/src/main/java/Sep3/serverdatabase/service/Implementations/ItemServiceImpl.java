@@ -3,16 +3,27 @@ package Sep3.serverdatabase.service.Implementations;
 
 import Sep3.serverdatabase.model.Item;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
+import com.google.protobuf.Empty;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import sep3.server.ItemServiceGrpc;
 import sep3.server.ItemP;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 @GrpcService
 public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
     private final ItemRepository repository;
+    private final static Logger LOG =
+            LoggerFactory.getLogger(ItemServiceImpl.class);
 
     @Autowired
     public ItemServiceImpl(ItemRepository repository){
@@ -49,6 +60,34 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
             responseObserver.onError(new Throwable("Could not add item to the database"));
         }
 
+    }
+
+    @Override
+    public void getItems(Empty request, StreamObserver<ItemP> responseObserver){
+
+       try{
+           LOG.info(">>> executing getProduct()..");
+           List<Item> items =repository.findAll();
+
+           for (Item item : items) {
+               ItemP itemP = ItemP.newBuilder()
+                       .setCategory(item.getCategory())
+                       .setDescription(item.getDescription())
+                       .setStock(item.getStock())
+                       .setPrice(item.getPrice())
+                       .setName(item.getName())
+                       .build();
+
+               responseObserver.onNext(itemP);
+           }
+
+           System.out.println("Items from database>>>>>>>"+items.toString());
+           responseObserver.onCompleted();
+       }
+       catch (Exception e){
+           LOG.error("Error while fetching items from the repository", e);
+           responseObserver.onError (new StatusRuntimeException(Status.INTERNAL.withDescription("Could not get items from the repository")));
+       }
     }
 
 }

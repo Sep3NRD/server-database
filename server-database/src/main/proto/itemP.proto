@@ -7,7 +7,6 @@ option java_multiple_files = true;
 option java_package = "sep3.server";
 option java_outer_classname = "ItemProto";
 
-
 message ItemP{
   string name=1;
   string description = 2;
@@ -16,7 +15,8 @@ message ItemP{
   int32 stock = 5;
 }
 
-service ItemService {
-  rpc postItem(ItemP) returns (ItemP);
-}
 
+service ItemService {
+  rpc postItem(ItemP) returns (ItemP){};
+  rpc getItems(google.protobuf.Empty) returns (stream ItemP);
+}

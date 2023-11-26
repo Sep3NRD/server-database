@@ -10,11 +10,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+
+
+import io.grpc.stub.StreamObserver;
 import sep3.server.AddressP;
 import sep3.server.CustomerP;
 import sep3.server.CustomerResponseP;
 import sep3.server.GetCustomerByUsername;
-import io.grpc.stub.StreamObserver;
+
 
 import java.util.Optional;
 
