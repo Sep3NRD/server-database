@@ -67,7 +67,7 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
 
        try{
            LOG.info(">>> executing getProduct()..");
-           List<Item> items =repository.findAll();
+           List<Item> items = repository.findAll();
 
            for (Item item : items) {
                ItemP itemP = ItemP.newBuilder()
@@ -76,6 +76,7 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
                        .setStock(item.getStock())
                        .setPrice(item.getPrice())
                        .setName(item.getName())
+                       .setItemId(item.getId())
                        .build();
 
                responseObserver.onNext(itemP);

@@ -13,6 +13,7 @@ message ItemP{
   string category = 3;
   double price = 4;
   int32 stock = 5;
+  int32 itemId = 6;
 }
 
 
