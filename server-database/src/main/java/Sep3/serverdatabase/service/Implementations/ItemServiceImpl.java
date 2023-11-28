@@ -11,6 +11,8 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import sep3.server.GetItemById;
+import sep3.server.ItemResponseP;
 import sep3.server.ItemServiceGrpc;
 import sep3.server.ItemP;
 
@@ -89,6 +91,40 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
            LOG.error("Error while fetching items from the repository", e);
            responseObserver.onError (new StatusRuntimeException(Status.INTERNAL.withDescription("Could not get items from the repository")));
        }
+    }
+
+    @Override
+    public void getItemById(GetItemById request, StreamObserver<ItemResponseP> responseObserver){
+        int id = request.getItemId();
+
+        try{
+            Optional<Item> optionalItem = repository.findById(id);
+            if (optionalItem.isPresent()){
+                Item item = optionalItem.get();
+
+                ItemP itemP = ItemP.newBuilder()
+                        .setItemId(item.getId())
+                        .setName(item.getName())
+                        .setDescription(item.getDescription())
+                        .setPrice(item.getPrice())
+                        .setCategory(item.getCategory())
+                        .setStock(item.getStock())
+                        .build();
+
+                ItemResponseP itemResponseP = ItemResponseP.newBuilder().setItem(itemP).build();
+                responseObserver.onNext(itemResponseP);
+                responseObserver.onCompleted();
+            }
+            else {
+                String errorMessage = "Item with id " + id + " not found";
+                responseObserver.onError(Status.NOT_FOUND.withDescription(errorMessage).asException());
+            }
+        }
+
+        catch (Exception e){
+            responseObserver.onError(e);
+        }
+
     }
 
 }
