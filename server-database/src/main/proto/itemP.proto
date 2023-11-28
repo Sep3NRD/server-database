@@ -36,6 +36,27 @@ message ItemResponseP{
   ItemP item = 1;
 }
 
+message GetItemRequest{
+  string name=1;
+  string description = 2;
+  string category = 3;
+  double price = 4;
+  int32 stock = 5;
+}
+
+message DeleteItemRequest{
+  int32 itemId =1;
+}
+
+message GetItemById{
+  int32 itemId= 1;
+}
+
+message ItemResponseP{
+  ItemP item = 1;
+}
+
+
 
 service ItemService {
   rpc postItem(ItemP) returns (ItemP){};
