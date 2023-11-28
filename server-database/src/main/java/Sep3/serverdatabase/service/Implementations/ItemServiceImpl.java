@@ -11,6 +11,8 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import sep3.server.GetItemById;
+import sep3.server.ItemResponseP;
 import sep3.server.ItemServiceGrpc;
 import sep3.server.ItemP;
 
@@ -89,5 +91,14 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
            responseObserver.onError (new StatusRuntimeException(Status.INTERNAL.withDescription("Could not get items from the repository")));
        }
     }
+
+//    public void getItemById(GetItemById request, StreamObserver<ItemResponseP> responseObserver) {
+//        int itemId = request.getItemId();
+//        ItemP item = getItemByIdFromDatabase(itemId);
+//        ItemResponseP response = /* retrieve item by ID */;
+//        responseObserver.onNext(response);
+//        responseObserver.onCompleted();
+//    }
+
 
 }
