@@ -24,17 +24,21 @@ public class Customer {
     private String password;
     @OneToOne
     private Address address;
+    private String role;
+
+
 
 
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String userName, String password, Address address) {
+    public Customer(String firstName, String lastName, String userName, String password, Address address,String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
         this.password = password;
         this.address = address;
+        this.role=role;
     }
 
     public int getId() {
@@ -76,6 +80,19 @@ public class Customer {
     public Address getAddress() {
         return address;
     }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
 
     @Override
     public String toString() {

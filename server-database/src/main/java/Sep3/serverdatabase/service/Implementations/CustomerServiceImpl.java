@@ -93,7 +93,7 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                         .setUsername(customer.getUserName())
                         .setPassword(customer.getPassword())
                         .setLastName(customer.getLastName())
-                        .setAddress(addressP)
+                        .setAddress(addressP).setRole(customer.getRole())
                         .build();
 
                 // Build the response message with the transformed customer data
@@ -172,7 +172,7 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                 request.getLastName(),
                 request.getUsername(),
                 request.getPassword(),
-                address
+                address,request.getRole()
         );
     }
 
@@ -200,7 +200,7 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                 .setLastName(request.getLastName())
                 .setUsername(request.getUserName())
                 .setPassword(request.getPassword())
-                .setAddress(addressP)
+                .setAddress(addressP).setRole(request.getRole())
                 .build();
     }
 

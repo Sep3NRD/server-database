@@ -23,6 +23,7 @@ message CustomerP {
   string firstName = 4;
   string lastName = 5;
   AddressP address = 6;
+  string role=7;
 }
 
 message GetCustomerRequest {
