@@ -61,7 +61,8 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                 request.getCustomer().getLastName(),
                 request.getCustomer().getUsername(),
                 request.getCustomer().getPassword(),
-                address
+                address,
+                request.getCustomer().getRole()
         );
         List<Item> items = new ArrayList<>();
         for (ItemP itemP : request.getItemsList()) {

@@ -137,7 +137,7 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
 
                 repository.save(item);
 
-
+                responseObserver.onNext(StringValue.newBuilder().setValue("Item Updated").build());
                 responseObserver.onCompleted();
             }
             else {
