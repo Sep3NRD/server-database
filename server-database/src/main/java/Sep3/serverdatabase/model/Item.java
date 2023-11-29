@@ -22,6 +22,9 @@ public class Item {
     private String category;
     private int stock;
     private String description;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     public Item(String name, double price, String category, int stock, String description) {
         this.name = name;
@@ -58,6 +61,13 @@ public class Item {
     public Item() {
     }
 
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 
     public String getName() {
         return name;
