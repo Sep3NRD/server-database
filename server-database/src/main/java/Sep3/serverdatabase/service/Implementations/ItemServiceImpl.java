@@ -4,7 +4,6 @@ package Sep3.serverdatabase.service.Implementations;
 import Sep3.serverdatabase.model.Item;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
 import com.google.protobuf.Empty;
-import com.google.protobuf.StringValue;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -100,7 +99,7 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
                 Item item = optionalItem.get();
 
                 ItemP itemP = ItemP.newBuilder()
-                        .setItemId(item.getId())
+                        .setItemId(id)
                         .setName(item.getName())
                         .setDescription(item.getDescription())
                         .setPrice(item.getPrice())
@@ -124,7 +123,7 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
     }
 
     @Override
-    public void updateItem(UpdateItemRequest request, StreamObserver<StringValue> responseObserver ){
+    public void updateItem(UpdateItemRequest request, StreamObserver<Empty> responseObserver ){
         int id = request.getItemId();
 
         try {
@@ -136,8 +135,6 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
                         item.setStock(request.getStock());
 
                 repository.save(item);
-
-
                 responseObserver.onCompleted();
             }
             else {
@@ -147,6 +144,29 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
         }
         catch (Exception e){
             responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void deleteItem(DeleteItemRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            int itemId = request.getItemId();
+
+            Optional<Item> optionalItem = repository.findById(itemId);
+
+            if (optionalItem.isPresent()) {
+                repository.deleteById(itemId);
+
+                responseObserver.onNext(Empty.getDefaultInstance());
+                responseObserver.onCompleted();
+            } else {
+
+                responseObserver.onError(new StatusRuntimeException(
+                        Status.NOT_FOUND.withDescription("Item with ID " + itemId + " not found")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseObserver.onError(new Throwable("Could not delete item from the database"));
         }
     }
 }
