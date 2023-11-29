@@ -66,11 +66,9 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
 
         // Extract the username from the gRPC request
         String username = request.getUsername();
-
         try {
             // Attempt to retrieve a customer from the repository based on the provided username
             Optional<Customer> optionalCustomer = repository.findByUserName(username);
-
             // Check if the customer with the given username exists
             if (optionalCustomer.isPresent()) {
                 // If the customer exists, convert the customer data to a proto message (CustomerP)
@@ -93,7 +91,8 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                         .setUsername(customer.getUserName())
                         .setPassword(customer.getPassword())
                         .setLastName(customer.getLastName())
-                        .setAddress(addressP).setRole(customer.getRole())
+                        .setAddress(addressP)
+                        .setRole(customer.getRole())
                         .build();
 
                 // Build the response message with the transformed customer data
