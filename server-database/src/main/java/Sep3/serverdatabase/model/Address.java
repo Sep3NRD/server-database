@@ -41,7 +41,15 @@ public class Address {
             return doorNumber;
         }
 
-        public void setDoorNumber(int doorNumber) {
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setDoorNumber(int doorNumber) {
             this.doorNumber = doorNumber;
         }
 

@@ -144,6 +144,46 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         }
     }
 
+    @Override
+    public void updateCustomer(CustomerP request,StreamObserver<CustomerResponseP> responseObserver){
+        Optional<Customer> optionalCustomer = repository.findByUserName(request.getUsername());
+
+        if (optionalCustomer.isPresent())
+        {
+            Customer customer = optionalCustomer.get();
+            customer=getCustomerFields(request);
+
+            System.out.println("request vbalue : " + request.getAddress().getStreet());
+
+
+            Address address = customer.getAddress();
+            System.out.println("address vle : " + request.getAddress().getStreet());
+            address.setId(optionalCustomer.get().getAddress().getId());
+
+            customer.setRole(request.getRole());
+            customer.setId(request.getId());
+
+
+
+            addressRepository.save(address);
+            repository.save(customer);
+
+
+            CustomerP customerP = getCustomerPFields(customer);
+
+
+            CustomerResponseP customerResponseP = CustomerResponseP.newBuilder().setCustomer(customerP).build();
+            responseObserver.onNext(customerResponseP);
+            responseObserver.onCompleted();
+        } else {
+            // If the customer authentication fails, send an error response
+            String errorMessage = "Could not update customer with id : " +request.getId();
+
+            // Use gRPC Status.NOT_FOUND to represent a client error (404 Not Found)
+            responseObserver.onError(Status.ABORTED.withDescription(errorMessage).asException());
+        }
+    }
+
 
 
 
