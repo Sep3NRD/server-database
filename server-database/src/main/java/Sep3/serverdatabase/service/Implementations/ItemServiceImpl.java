@@ -4,6 +4,7 @@ package Sep3.serverdatabase.service.Implementations;
 import Sep3.serverdatabase.model.Item;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
 import com.google.protobuf.Empty;
+import com.google.protobuf.StringValue;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -11,12 +12,8 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import sep3.server.GetItemById;
-import sep3.server.ItemResponseP;
-import sep3.server.ItemServiceGrpc;
-import sep3.server.ItemP;
+import sep3.server.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,7 +121,33 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
         catch (Exception e){
             responseObserver.onError(e);
         }
-
     }
 
+    @Override
+    public void updateItem(UpdateItemRequest request, StreamObserver<StringValue> responseObserver ){
+        int id = request.getItemId();
+
+        try {
+            Optional<Item> optionalItem = repository.findById(id);
+            if (optionalItem.isPresent()) {
+                Item item = optionalItem.get();
+
+                        item.setPrice(request.getPrice());
+                        item.setStock(request.getStock());
+
+                repository.save(item);
+
+
+                responseObserver.onCompleted();
+            }
+            else {
+                String errorMessage = "Item was not found";
+                responseObserver.onError(Status.NOT_FOUND.withDescription(errorMessage).asException());
+            }
+        }
+        catch (Exception e){
+            responseObserver.onError(e);
+        }
+    }
 }
+

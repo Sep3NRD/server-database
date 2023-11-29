@@ -1,0 +1,35 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "itemP.proto";
+import "customerP.proto";
+
+option csharp_namespace = "Application";
+option java_multiple_files = true;
+option java_package = "sep3.server";
+option java_outer_classname = "OrderProto";
+
+message OrderP {
+  int32 id = 1;
+  CustomerP customer = 2;
+  repeated ItemP items = 3;
+  AddressP address = 4;
+  string orderDate =5;
+  string deliveryDate = 6;
+  bool isConfirmed =7;
+  double totalPrice=8;
+}
+
+
+message OrderResponseP{
+  OrderP order = 1;
+}
+
+message OrderPRequest {
+  CustomerP customer = 1;
+  repeated ItemP items = 2;
+}
+
+service OrderService{
+  rpc createOrder(OrderPRequest) returns (OrderResponseP){};
+}
