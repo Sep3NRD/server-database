@@ -11,12 +11,8 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import sep3.server.GetItemById;
-import sep3.server.ItemResponseP;
-import sep3.server.ItemServiceGrpc;
-import sep3.server.ItemP;
+import sep3.server.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,7 +99,7 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
                 Item item = optionalItem.get();
 
                 ItemP itemP = ItemP.newBuilder()
-                        .setItemId(item.getId())
+                        .setItemId(id)
                         .setName(item.getName())
                         .setDescription(item.getDescription())
                         .setPrice(item.getPrice())
@@ -124,7 +120,54 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
         catch (Exception e){
             responseObserver.onError(e);
         }
-
     }
 
+    @Override
+    public void updateItem(UpdateItemRequest request, StreamObserver<Empty> responseObserver ){
+        int id = request.getItemId();
+
+        try {
+            Optional<Item> optionalItem = repository.findById(id);
+            if (optionalItem.isPresent()) {
+                Item item = optionalItem.get();
+
+                        item.setPrice(request.getPrice());
+                        item.setStock(request.getStock());
+
+                repository.save(item);
+                responseObserver.onCompleted();
+            }
+            else {
+                String errorMessage = "Item was not found";
+                responseObserver.onError(Status.NOT_FOUND.withDescription(errorMessage).asException());
+            }
+        }
+        catch (Exception e){
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void deleteItem(DeleteItemRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            int itemId = request.getItemId();
+
+            Optional<Item> optionalItem = repository.findById(itemId);
+
+            if (optionalItem.isPresent()) {
+                repository.deleteById(itemId);
+
+                responseObserver.onNext(Empty.getDefaultInstance());
+                responseObserver.onCompleted();
+            } else {
+
+                responseObserver.onError(new StatusRuntimeException(
+                        Status.NOT_FOUND.withDescription("Item with ID " + itemId + " not found")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseObserver.onError(new Throwable("Could not delete item from the database"));
+        }
+    }
 }
+
