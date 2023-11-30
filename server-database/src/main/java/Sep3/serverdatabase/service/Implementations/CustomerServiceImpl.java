@@ -144,42 +144,42 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         }
     }
 
+    // Override the updateCustomer method from the gRPC service definition
     @Override
-    public void updateCustomer(CustomerP request,StreamObserver<CustomerResponseP> responseObserver){
+    public void updateCustomer(CustomerP request, StreamObserver<CustomerResponseP> responseObserver) {
+        // Attempt to find a customer in the repository based on the provided username
         Optional<Customer> optionalCustomer = repository.findByUserName(request.getUsername());
 
-        if (optionalCustomer.isPresent())
-        {
+        if (optionalCustomer.isPresent()) {
+            // If the customer is found, retrieve it and update its fields
             Customer customer = optionalCustomer.get();
-            customer=getCustomerFields(request);
+            customer = getCustomerFields(request);
+            
 
-            System.out.println("request vbalue : " + request.getAddress().getStreet());
-
-
+            // Extract the address from the updated customer and set its ID
             Address address = customer.getAddress();
-            System.out.println("address vle : " + request.getAddress().getStreet());
             address.setId(optionalCustomer.get().getAddress().getId());
 
+            // Update additional fields of the customer
             customer.setRole(request.getRole());
             customer.setId(request.getId());
 
-
-
+            // Save the updated address and customer to their respective repositories
             addressRepository.save(address);
             repository.save(customer);
 
-
+            // Convert the updated customer to a gRPC response message
             CustomerP customerP = getCustomerPFields(customer);
-
-
             CustomerResponseP customerResponseP = CustomerResponseP.newBuilder().setCustomer(customerP).build();
+
+            // Send the updated customer as a response to the client
             responseObserver.onNext(customerResponseP);
             responseObserver.onCompleted();
         } else {
-            // If the customer authentication fails, send an error response
-            String errorMessage = "Could not update customer with id : " +request.getId();
+            // If the customer is not found, send an error response
+            String errorMessage = "Could not update customer with id: " + request.getId();
 
-            // Use gRPC Status.NOT_FOUND to represent a client error (404 Not Found)
+            // Use gRPC Status.ABORTED to represent a client error (HTTP 409 Conflict)
             responseObserver.onError(Status.ABORTED.withDescription(errorMessage).asException());
         }
     }
