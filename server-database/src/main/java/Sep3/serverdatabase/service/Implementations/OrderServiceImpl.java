@@ -5,25 +5,33 @@ import Sep3.serverdatabase.model.Customer;
 import Sep3.serverdatabase.model.Item;
 import Sep3.serverdatabase.model.Order;
 import Sep3.serverdatabase.service.interfaces.CustomerRepository;
+import Sep3.serverdatabase.service.interfaces.ItemRepository;
 import Sep3.serverdatabase.service.interfaces.OrderRepository;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 import sep3.server.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 @GrpcService
 public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     private final OrderRepository repository;
     private  final CustomerRepository customerRepository;
+    private  final ItemRepository itemRepository;
+
 
     @Autowired
-    public OrderServiceImpl(OrderRepository repository, CustomerRepository customerRepository){
+    public OrderServiceImpl(OrderRepository repository, CustomerRepository customerRepository, ItemRepository itemRepository){
         this.repository = repository;
         this.customerRepository = customerRepository;
+        this.itemRepository = itemRepository;
+
     }
 
     @Override
@@ -31,6 +39,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         try {
 
            Order order = getOrderFields(request);
+           order.setConfirmed(true);
 
             // Fetch the existing customer or merge the detached customer back into the persistence context
             Customer existingCustomer = customerRepository.findByUserName(order.getCustomer().getUserName()).orElse(null);
@@ -44,8 +53,16 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                 customerRepository.save(order.getCustomer()); // Save the customer
             }
 
+            // Check and process items
+            Set<Item> items = processItems(request.getItemsList());
+            order.setItems(items);
 
-            System.out.println(">>>>>>>>>"+order);
+            if (order.isConfirmed()) {
+              // String currentDate = LocalDate.now().toString();
+                String deliveryDate = LocalDate.now().plusDays(3).toString();
+                order.setDeliveryDate(deliveryDate.toString());
+            }
+
             repository.save(order);
             OrderP orderP = getOrderPFields(order);
             OrderResponseP orderResponseP = OrderResponseP.newBuilder()
@@ -64,9 +81,35 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             responseObserver.onError(new Throwable("Could not add an Order to the database"));
         }
     }
-//    private Customer getExistingCustomer(CustomerPRequest.Customer customer) {
-//        return  null;
-//    }
+    private Set<Item> processItems(List<ItemP> itemPList) {
+        Set<Item> items = new HashSet<>();
+
+        for (ItemP itemP : itemPList) {
+            // Check if the item with the same ID already exists in the database
+            Optional<Item> existingItem = itemRepository.findById(itemP.getItemId());
+
+            Item item;
+            if (existingItem.isPresent()) {
+                // If the item exists, reuse it
+                item = existingItem.get();
+            } else {
+                // If the item doesn't exist, create a new one
+                item = new Item(
+                        itemP.getName(),
+                        itemP.getPrice(),
+                        itemP.getCategory(),
+                        itemP.getStock(),
+                        itemP.getDescription()
+                );
+            }
+
+            // Add the item to the set
+            items.add(item);
+        }
+
+        return items;
+    }
+
     private Order getOrderFields(OrderPRequest request) {
         Address address = new Address(
                 request.getOrder().getAddress().getDoorNumber(),
@@ -93,22 +136,33 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             );
         }
 
-        List<Item> items = new ArrayList<>();
+        Set<Item> items = new HashSet<>();
         for (ItemP itemP : request.getItemsList()) {
-            Item item = new Item(
-                    itemP.getName(),
-                    itemP.getPrice(),
-                    itemP.getCategory(),
-                    itemP.getStock(),
-                    itemP.getDescription()
-            );
+            // Check if the item with the same ID already exists in the database
+            Optional<Item> existingItem = itemRepository.findById(itemP.getItemId());
+
+            Item item;
+            if (existingItem.isPresent()) {
+                // If the item exists, reuse it
+                item = existingItem.get();
+            } else {
+                // If the item doesn't exist, create a new one
+                item = new Item(
+                        itemP.getName(),
+                        itemP.getPrice(),
+                        itemP.getCategory(),
+                        itemP.getStock(),
+                        itemP.getDescription()
+                );
+            }
+
             items.add(item);
 
         }
 
         return new Order(
                 customer,
-                items,
+                (Set<Item>) items,
                 customer.getAddress(),
                 request.getOrder().getOrderDate(),
                 request.getOrder().getDeliveryDate()
@@ -143,7 +197,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                     .build();
         }
 
-        List<ItemP> itemsP = new ArrayList<>();
+        Set<ItemP> itemsP = new HashSet<>();
         for (Item item: request.getItems()){
             ItemP itemP = ItemP.newBuilder()
                     .setItemId(item.getId())

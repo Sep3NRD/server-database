@@ -1,6 +1,9 @@
 package Sep3.serverdatabase.configs;
+
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+
 import org.springframework.context.annotation.Configuration;
+
 
 @Configuration
 @ImportAutoConfiguration({
@@ -23,4 +26,5 @@ import org.springframework.context.annotation.Configuration;
 
 
 public class GrpcConfig {
+
 }

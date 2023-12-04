@@ -2,8 +2,9 @@ package Sep3.serverdatabase.model;
 
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.util.List;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "\"order\"")
@@ -23,9 +24,16 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    //@Column(name = "item_id")
-    private List<Item> items;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.MERGE, orphanRemoval = true)
+    @Column
+    private Set<Item> items;
+
+    @ElementCollection
+    @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
+    @Column(name = "item_id")
+    private Set<Integer> itemIds;
+
     @ManyToOne
     @JoinColumn(name = "address_id")
     private Address adress;
@@ -38,14 +46,24 @@ public class Order {
     private double totalPrice;
     public Order(){}
 
-    public Order (Customer customer, List<Item> items,Address address, String orderDate, String deliveryDate){
+    public Order (Customer customer, Set<Item>  items,Address address, String orderDate, String deliveryDate){
         this.customer = customer;
         this.items = items;
+        this.itemIds = extractItemIds(items);
         this.adress = address;
         this.orderDate = orderDate;
         this.deliveryDate = deliveryDate;
         this.isConfirmed = false;
         this.totalPrice = getTotalPrice();
+    }
+    private Set<Integer> extractItemIds(Set<Item> items) {
+        return items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<Integer> getItemIds() {
+        return itemIds;
     }
 
     public int getId() {
@@ -60,19 +78,19 @@ public class Order {
         this.customer = customer;
     }
 
-    public List<Item> getItems() {
+    public Set<Item>  getItems() {
         return items;
     }
 
-    public void setItems(List<Item> items) {
+    public void setItems(Set<Item>  items) {
         this.items = items;
     }
 
-    public Address getAdress() {
+    public Address getAddress() {
         return adress;
     }
 
-    public void setAdress(Address adress) {
+    public void setAddress(Address adress) {
         this.adress = adress;
     }
 
