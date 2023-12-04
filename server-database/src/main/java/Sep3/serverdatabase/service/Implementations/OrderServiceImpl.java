@@ -39,7 +39,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         try {
 
            Order order = getOrderFields(request);
-           order.setConfirmed(true);
 
             // Fetch the existing customer or merge the detached customer back into the persistence context
             Customer existingCustomer = customerRepository.findByUserName(order.getCustomer().getUserName()).orElse(null);
@@ -81,6 +80,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             responseObserver.onError(new Throwable("Could not add an Order to the database"));
         }
     }
+
     private Set<Item> processItems(List<ItemP> itemPList) {
         Set<Item> items = new HashSet<>();
 
