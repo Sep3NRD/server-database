@@ -2,6 +2,8 @@ package Sep3.serverdatabase.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table
 public class Customer {
@@ -26,7 +28,8 @@ public class Customer {
     private Address address;
     private String role;
 
-
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch =  FetchType.EAGER )
+    private List<Order> orders;
 
 
     public Customer() {
@@ -39,6 +42,14 @@ public class Customer {
         this.password = password;
         this.address = address;
         this.role=role;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 
     public int getId() {

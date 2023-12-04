@@ -22,9 +22,10 @@ public class Item {
     private String category;
     private int stock;
     private String description;
-    @ManyToOne
-    @JoinColumn(name = "order_id")
+    @ManyToOne(cascade = CascadeType.MERGE, fetch =  FetchType.EAGER)
+    @JoinColumn(name = "order_id") // This should be on the owning side
     private Order order;
+
 
     public Item(String name, double price, String category, int stock, String description) {
         this.name = name;
@@ -61,13 +62,6 @@ public class Item {
     public Item() {
     }
 
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
 
     public String getName() {
         return name;

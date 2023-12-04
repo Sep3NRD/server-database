@@ -10,22 +10,23 @@ import java.util.List;
 public class Order {
     @Id
     @SequenceGenerator(
-            name = "customer_sequence",
-            sequenceName = "customer_sequence",
+            name = "order_sequence",
+            sequenceName = "order_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "customer_sequence"
+            generator = "order_sequence"
     )
 
     private int id;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    //@Column(name = "item_id")
     private List<Item> items;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "address_id")
     private Address adress;
     @Column(name = "order_date")
@@ -44,6 +45,7 @@ public class Order {
         this.orderDate = orderDate;
         this.deliveryDate = deliveryDate;
         this.isConfirmed = false;
+        this.totalPrice = getTotalPrice();
     }
 
     public int getId() {

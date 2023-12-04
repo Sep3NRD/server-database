@@ -26,7 +26,7 @@ message OrderResponseP{
 }
 
 message OrderPRequest {
-  CustomerP customer = 1;
+  string customerUsername = 1;
   repeated ItemP items = 2;
   OrderP order = 3;
 }
