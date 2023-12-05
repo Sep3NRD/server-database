@@ -75,6 +75,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
             addressRepository.save(order.getAddress());
             repository.save(order);
+            //confirm
 
             ConfirmationResponse response = ConfirmationResponse.newBuilder()
                     .setSuccess(order.isConfirmed())
