@@ -15,10 +15,6 @@ import sep3.server.*;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @GrpcService
 public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
@@ -41,29 +37,34 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     public void createOrder(OrderPRequest request, StreamObserver<OrderResponseP> responseObserver){
         try {
 
-           Order order = getOrderFields(request);
-           addressRepository.save(order.getAddress());
+            Order order = getOrderFields(request);
 
-            // Fetch the existing customer or merge the detached customer back into the persistence context
-            Customer existingCustomer = customerRepository.findByUserName(order.getCustomer().getUserName()).orElse(null);
+            Optional<Customer> customerToFind = customerRepository.findByUserName(request.getCustomerUsername());
 
-            if (existingCustomer != null) {
+
+            if (customerToFind.isPresent()) {
+                // Fetch the existing customer or merge the detached customer back into the persistence context
+                Customer existingCustomer = customerToFind.get();
+
                 // Merge the detached customer into the persistence context
+//                Set<Address> addresses = new HashSet<>();
+
+
+                Optional<Address> foundedAddress = existingCustomer.getOtherAddresses().stream().findFirst();
+
+                addressRepository.save(foundedAddress.get());
                 order.setCustomer(existingCustomer);
-            } else {
-                // If the customer doesn't exist, create a new customer
-                order.getCustomer().getOrders().add(order); // Ensure bidirectional relationship
-                customerRepository.save(order.getCustomer()); // Save the customer
-            }
+                order.setAddress(foundedAddress.get());
 
-            // Check and process items
-            Set<Item> items = processItems(request.getItemsList());
-            order.setItems(items);
+                // Check and process items
+                Set<Item> items = processItems(request.getItemsList());
+                order.setItems(items);
 
-            if (order.isConfirmed()) {
-              // String currentDate = LocalDate.now().toString();
-                String deliveryDate = LocalDate.now().plusDays(3).toString();
-                order.setDeliveryDate(deliveryDate.toString());
+                if (order.isConfirmed()) {
+                    // String currentDate = LocalDate.now().toString();
+                    String deliveryDate = LocalDate.now().plusDays(3).toString();
+                    order.setDeliveryDate(deliveryDate.toString());
+                }
             }
 
             repository.save(order);

@@ -44,7 +44,6 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
             // Convert the gRPC request message to a domain model object (Customer)
             Customer customer = getCustomerFields(request);
             repository.save(customer);
-            System.out.println(customer.getOtherAddresses().toString());
 
             // Save the customer's address to the address repository
             Optional<Address> address = customer.getOtherAddresses().stream().findFirst();
