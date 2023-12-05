@@ -8,6 +8,7 @@ import Sep3.serverdatabase.service.interfaces.AddressRepository;
 import Sep3.serverdatabase.service.interfaces.CustomerRepository;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
 import Sep3.serverdatabase.service.interfaces.OrderRepository;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,82 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             responseObserver.onError(new Throwable("Could not add an Order to the database"));
         }
     }
+
+    @Override
+    public void confirmOrder(OrderP request, StreamObserver<ConfirmationResponse> responseObserver){
+        try {
+            Order order = convertToOrder(request);
+            order.setConfirmed(true);
+            order.setDeliveryDate(LocalDate.now().plusDays(3).toString());
+            addressRepository.save(order.getAddress());
+            repository.save(order);
+            ConfirmationResponse response = ConfirmationResponse.newBuilder()
+                    .setSuccess(order.isConfirmed())
+                    .setDeliveryDate(order.getDeliveryDate())
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+        catch (Exception e) {
+            System.out.println("Error in confirming the order");
+            e.printStackTrace();
+            // Handle any exceptions or errors
+            responseObserver.onError(Status.INTERNAL.withDescription("Error confirming order").asException());
+        }
+    }
+
+    private Order convertToOrder(OrderP request) {
+        Address address = new Address(
+                request.getAddress().getDoorNumber(),
+                request.getAddress().getStreet(),
+                request.getAddress().getCity(),
+                request.getAddress().getState(),
+                request.getAddress().getPostalCode(),
+                request.getAddress().getCountry()
+        );
+        String customerUsername = request.getCustomer().getUsername();
+        Optional<Customer> customerToConvert = customerRepository.findByUserName(customerUsername);
+        Customer customer = customerToConvert.orElse(null);
+        if (customer == null) {
+            // If the customer doesn't exist, create a new customer
+            Set<Address> addressSet = new HashSet<>();
+            customer = new Customer(
+                    request.getCustomer().getFirstName(),
+                    request.getCustomer().getLastName(),
+                    request.getCustomer().getUsername(),
+                    request.getCustomer().getPassword(),
+                    request.getCustomer().getRole()
+            );
+        }
+        Set<Item> items = new HashSet<>();
+        for (ItemP itemP : request.getItemsList()) {
+            // Check if the item with the same ID already exists in the database
+            Optional<Item> existingItem = itemRepository.findById(itemP.getItemId());
+            Item item;
+            if (existingItem.isPresent()) {
+                // If the item exists, reuse it
+                item = existingItem.get();
+            } else {
+                // If the item doesn't exist, create a new one
+                item = new Item(
+                        itemP.getName(),
+                        itemP.getPrice(),
+                        itemP.getCategory(),
+                        itemP.getStock(),
+                        itemP.getDescription()
+                );
+            }
+            items.add(item);
+        }
+        return new Order(
+                customer,
+                items,
+                address,
+                request.getOrderDate(),
+                request.getDeliveryDate()
+        );
+    }
+
 
 
 
