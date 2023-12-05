@@ -63,7 +63,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                     order.setDeliveryDate(deliveryDate.toString());
                 }
             }
-
             repository.save(order);
             OrderP orderP = getOrderPFields(order);
             OrderResponseP orderResponseP = OrderResponseP.newBuilder()
