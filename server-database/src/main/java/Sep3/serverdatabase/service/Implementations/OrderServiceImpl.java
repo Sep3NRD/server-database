@@ -4,6 +4,7 @@ import Sep3.serverdatabase.model.Address;
 import Sep3.serverdatabase.model.Customer;
 import Sep3.serverdatabase.model.Item;
 import Sep3.serverdatabase.model.Order;
+import Sep3.serverdatabase.service.interfaces.AddressRepository;
 import Sep3.serverdatabase.service.interfaces.CustomerRepository;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
 import Sep3.serverdatabase.service.interfaces.OrderRepository;
@@ -24,13 +25,15 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     private final OrderRepository repository;
     private  final CustomerRepository customerRepository;
     private  final ItemRepository itemRepository;
+    private final AddressRepository addressRepository;
 
 
     @Autowired
-    public OrderServiceImpl(OrderRepository repository, CustomerRepository customerRepository, ItemRepository itemRepository){
+    public OrderServiceImpl(OrderRepository repository, CustomerRepository customerRepository, ItemRepository itemRepository,AddressRepository addressRepository){
         this.repository = repository;
         this.customerRepository = customerRepository;
         this.itemRepository = itemRepository;
+        this.addressRepository=addressRepository;
 
     }
 
@@ -39,6 +42,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         try {
 
            Order order = getOrderFields(request);
+           addressRepository.save(order.getAddress());
 
             // Fetch the existing customer or merge the detached customer back into the persistence context
             Customer existingCustomer = customerRepository.findByUserName(order.getCustomer().getUserName()).orElse(null);
@@ -124,15 +128,17 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         Optional<Customer> customerToConvert = customerRepository.findByUserName(customerUsername);
 
         Customer customer = customerToConvert.orElse(null);
+
         if (customer == null) {
             // If the customer doesn't exist, create a new customer
+            Set<Address> addresses = new HashSet<>();
+            addresses.add(address);
             customer = new Customer(
                     request.getOrder().getCustomer().getFirstName(),
                     request.getOrder().getCustomer().getLastName(),
                     request.getOrder().getCustomer().getUsername(),
                     request.getOrder().getCustomer().getPassword(),
-                    address,
-                    request.getOrder().getCustomer().getRole()
+                    request.getOrder().getCustomer().getRole(),addresses
             );
         }
 
@@ -163,20 +169,22 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         return new Order(
                 customer,
                 (Set<Item>) items,
-                customer.getAddress(),
+                address,
                 request.getOrder().getOrderDate(),
                 request.getOrder().getDeliveryDate()
         );
     }
     private OrderP getOrderPFields(Order request) {
 
+
+
         AddressP addressP = AddressP.newBuilder()
-                .setDoorNumber(request.getCustomer().getAddress().getDoorNumber())
-                .setStreet(request.getCustomer().getAddress().getStreet())
-                .setCity(request.getCustomer().getAddress().getCity())
-                .setState(request.getCustomer().getAddress().getState())
-                .setPostalCode(request.getCustomer().getAddress().getPostalCode())
-                .setCountry(request.getCustomer().getAddress().getCountry())
+                .setDoorNumber(request.getAddress().getDoorNumber())
+                .setStreet(request.getAddress().getStreet())
+                .setCity(request.getAddress().getCity())
+                .setState(request.getAddress().getState())
+                .setPostalCode(request.getAddress().getPostalCode())
+                .setCountry(request.getAddress().getCountry())
                 .build();
 
         CustomerP customerP;

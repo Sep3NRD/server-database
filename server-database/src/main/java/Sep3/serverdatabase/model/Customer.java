@@ -1,9 +1,12 @@
 package Sep3.serverdatabase.model;
 
 import jakarta.persistence.*;
+import org.checkerframework.checker.units.qual.C;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table
@@ -25,13 +28,15 @@ public class Customer {
     private String lastName;
     private String userName;
     private String password;
-    @OneToOne
-    private Address address;
+
+//    private Address address;
     private String role;
 
 
     @OneToMany(mappedBy = "customer",fetch = FetchType.EAGER)
+    @Column
     private Set<Address> otherAddresses;
+
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch =  FetchType.EAGER )
     private List<Order> orders;
@@ -40,14 +45,27 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String firstName, String lastName, String userName, String password, Address address,String role) {
+    public Customer(String firstName, String lastName, String userName, String password,String role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
         this.password = password;
-        this.address = address;
+//        this.address = address;
         this.role=role;
     }
+
+    public Customer(String firstName, String lastName, String userName, String password,String role,Set<Address> otherAddresses) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userName = userName;
+        this.password = password;
+//        this.address = address;
+        this.role=role;
+        this.otherAddresses=otherAddresses;
+
+    }
+
+
 
 
     public Set<Address> getOtherAddresses() {
@@ -102,13 +120,13 @@ public class Customer {
         this.password = password;
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
+//    public Address getAddress() {
+//        return address;
+//    }
+//
+//    public void setAddress(Address address) {
+//        this.address = address;
+//    }
 
     public String getRole() {
         return role;
@@ -130,7 +148,7 @@ public class Customer {
                 ", lastName='" + lastName + '\'' +
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
-                ", address=" + address +
+                ", address=" +
                 '}';
     }
 }

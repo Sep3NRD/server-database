@@ -25,7 +25,7 @@ public class Address {
         private String country;
 
         @ManyToOne
-        @JoinColumn(name = "customer_id",insertable = false)
+        @JoinColumn(name = "customer_id")
         private Customer customer;
 
         public Address(int doorNumber, String street, String city, String state, int postalCode, String country) {

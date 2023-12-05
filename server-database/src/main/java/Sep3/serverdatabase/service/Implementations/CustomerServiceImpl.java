@@ -11,8 +11,11 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 import sep3.server.*;
 
+import javax.transaction.Transactional;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @GrpcService
 public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImplBase {
@@ -31,6 +34,7 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
     This method creates a customer and stores this customer in the database
      */
     @Override
+    @Transactional
     public void createCustomer(CustomerP request, StreamObserver<CustomerResponseP> responseObserver) {
 
     /*
@@ -39,15 +43,31 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         try {
             // Convert the gRPC request message to a domain model object (Customer)
             Customer customer = getCustomerFields(request);
+            repository.save(customer);
+            System.out.println(customer.getOtherAddresses().toString());
+
+            // Save the customer's address to the address repository
+            Optional<Address> address = customer.getOtherAddresses().stream().findFirst();
+            addressRepository.save(address.get());
+
+
+            Set<Address> otherAddresses = customer.getOtherAddresses();
+            if (otherAddresses != null && !otherAddresses.isEmpty()) {
+                for (Address otherAddress : otherAddresses) {
+                    otherAddress.setCustomer(customer);
+                    addressRepository.save(otherAddress);
+                }
+            }
 
             // Build the gRPC response message with the received customer data
             CustomerResponseP customerResponseP = CustomerResponseP.newBuilder().setCustomer(request).build();
 
-            // Save the customer's address to the address repository
-            addressRepository.save(customer.getAddress());
-
             // Save the customer to the main repository
             repository.save(customer);
+
+
+
+
 
             // Send the response to the client
             responseObserver.onNext(customerResponseP);
@@ -76,14 +96,20 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                 // If the customer exists, convert the customer data to a proto message (CustomerP)
                 Customer customer = optionalCustomer.get();
 
+                Optional<Address> optionalAddress = customer.getOtherAddresses().stream().findFirst();
+
+                    Address address = optionalAddress.get();
+
+
+
                 // Convert the address information to a proto message (AddressP)
                 AddressP addressP = AddressP.newBuilder()
-                        .setDoorNumber(customer.getAddress().getDoorNumber())
-                        .setCity(customer.getAddress().getCity())
-                        .setPostalCode(customer.getAddress().getPostalCode())
-                        .setCountry(customer.getAddress().getCountry())
-                        .setStreet(customer.getAddress().getStreet())
-                        .setState(customer.getAddress().getState())
+                        .setDoorNumber(address.getDoorNumber())
+                        .setCity(address.getCity())
+                        .setPostalCode(address.getPostalCode())
+                        .setCountry(address.getCountry())
+                        .setStreet(address.getStreet())
+                        .setState(address.getState())
                         .build();
 
                 // Build the CustomerP message with the transformed customer and address data
@@ -159,8 +185,8 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
             
 
             // Extract the address from the updated customer and set its ID
-            Address address = customer.getAddress();
-            address.setId(optionalCustomer.get().getAddress().getId());
+            Optional<Address> optionalAddress = customer.getOtherAddresses().stream().findFirst();
+            Address address = optionalAddress.get();
 
             // Update additional fields of the customer
             customer.setRole(request.getRole());
@@ -198,7 +224,8 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                     request.getStreet(),request.getCity(),
                     request.getState(),
                     request.getPostalCode(),
-                    request.getCountry(),customer);
+                    request.getCountry());
+            address.setCustomer(customer);
 
             Set<Address> newAddresses = customer.getOtherAddresses();
             newAddresses.add(address);
@@ -242,13 +269,15 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
                 request.getAddress().getCountry()
         );
 
+        Set<Address> addresses = new HashSet<>();
+        addresses.add(address);
         // Create a Customer object with fields from the gRPC request
         return new Customer(
                 request.getFirstName(),
                 request.getLastName(),
                 request.getUsername(),
                 request.getPassword(),
-                address,request.getRole()
+                request.getRole(),addresses
         );
     }
 
@@ -260,13 +289,19 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
      */
     private static CustomerP getCustomerPFields(Customer request) {
         // Extract address details from the Customer object and create an AddressP message
+        Optional<Address> optionalAddress = request.getOtherAddresses().stream().findFirst();
+        Address address=null;
+        if (optionalAddress.isPresent()) {
+            address=optionalAddress.get();
+        }
+
         AddressP addressP = AddressP.newBuilder()
-                .setDoorNumber(request.getAddress().getDoorNumber())
-                .setStreet(request.getAddress().getStreet())
-                .setCity(request.getAddress().getCity())
-                .setState(request.getAddress().getState())
-                .setPostalCode(request.getAddress().getPostalCode())
-                .setCountry(request.getAddress().getCountry())
+                .setDoorNumber(address.getDoorNumber())
+                .setStreet(address.getStreet())
+                .setCity(address.getCity())
+                .setState(address.getState())
+                .setPostalCode(address.getPostalCode())
+                .setCountry(address.getCountry())
                 .build();
 
         // Create a gRPC CustomerP response message with fields from the Customer object
