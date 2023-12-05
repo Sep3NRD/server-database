@@ -46,9 +46,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                 // Fetch the existing customer or merge the detached customer back into the persistence context
                 Customer existingCustomer = customerToFind.get();
 
-                // Merge the detached customer into the persistence context
-//                Set<Address> addresses = new HashSet<>();
-
 
                 Optional<Address> foundedAddress = existingCustomer.getOtherAddresses().stream().findFirst();
 
@@ -85,6 +82,8 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             responseObserver.onError(new Throwable("Could not add an Order to the database"));
         }
     }
+
+
 
     private Set<Item> processItems(List<ItemP> itemPList) {
         Set<Item> items = new HashSet<>();
