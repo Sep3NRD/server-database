@@ -22,8 +22,8 @@ public class Item {
     private String category;
     private int stock;
     private String description;
-    @ManyToOne
-    @JoinColumn(name = "order_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "order_id",nullable = true,insertable = false)
     private Order order;
 
 
