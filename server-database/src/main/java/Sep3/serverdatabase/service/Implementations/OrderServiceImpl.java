@@ -35,53 +35,93 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     }
 
     @Override
-    public void createOrder(OrderPRequest request, StreamObserver<OrderResponseP> responseObserver){
+    public void createOrder(CreateOrderP request, StreamObserver<SuccessMessage> responseObserver){
+
         try {
+            Customer finalCustomer = null;
+            Optional<Customer> customerFromDatabase = customerRepository.findByUserName(request.getCustomerUsername());
+            if (customerFromDatabase.isPresent())
+                finalCustomer = customerFromDatabase.get();
 
-            Order order = getOrderFields(request);
+            Address finalAddress = null;
+            Optional<Address> addressFromDatabase = addressRepository.findById(request.getAddressId());
+            if (addressFromDatabase.isPresent())
+                finalAddress = addressFromDatabase.get();
 
-            Optional<Customer> customerToFind = customerRepository.findByUserName(request.getCustomerUsername());
+            Set<Item> finalItems = convertToSetOfItems(request);
 
+            Order orderToSave = new Order(finalCustomer, finalItems, finalAddress, request.getOrderDate(), "Waiting for confirmation");
 
-            if (customerToFind.isPresent()) {
-                // Fetch the existing customer or merge the detached customer back into the persistence context
-                Customer existingCustomer = customerToFind.get();
+            repository.save(orderToSave);
+            SuccessMessage successMessage = SuccessMessage.newBuilder().setMessage("SUCCESS").build();
 
-
-                Optional<Address> foundedAddress = existingCustomer.getOtherAddresses().stream().findFirst();
-
-                addressRepository.save(foundedAddress.get());
-                order.setCustomer(existingCustomer);
-                order.setAddress(foundedAddress.get());
-
-                // Check and process items
-                Set<Item> items = processItems(request.getItemsList());
-                order.setItems(items);
-
-                if (order.isConfirmed()) {
-                    // String currentDate = LocalDate.now().toString();
-                    String deliveryDate = LocalDate.now().plusDays(3).toString();
-                    order.setDeliveryDate(deliveryDate.toString());
-                }
-            }
-
-            repository.save(order);
-            OrderP orderP = getOrderPFields(order);
-            OrderResponseP orderResponseP = OrderResponseP.newBuilder()
-                   .setOrder(orderP).build();
-
-
-           responseObserver.onNext(orderResponseP);
-           responseObserver.onCompleted();
+            responseObserver.onNext(successMessage);
+            responseObserver.onCompleted();
 
         }
-        catch (Exception e) {
-            // If an exception occurs during customer creation, handle the error
+        catch (Exception e)
+        {
+//             If an exception occurs during customer creation, handle the error
             System.out.println(e.getMessage());
 
             // Send an error response to the client with a descriptive message
             responseObserver.onError(new Throwable("Could not add an Order to the database"));
         }
+
+
+
+
+
+
+
+
+
+
+
+//            Order order = getOrderFields(request);
+//
+//            Optional<Customer> customerToFind = customerRepository.findByUserName(request.getCustomerUsername());
+//
+//
+//            if (customerToFind.isPresent()) {
+//                // Fetch the existing customer or merge the detached customer back into the persistence context
+//                Customer existingCustomer = customerToFind.get();
+//
+//
+//                Optional<Address> foundedAddress = existingCustomer.getOtherAddresses().stream().findFirst();
+//
+//                addressRepository.save(foundedAddress.get());
+//                order.setCustomer(existingCustomer);
+//                order.setAddress(foundedAddress.get());
+//
+//                // Check and process items
+//                Set<Item> items = processItems(request.getItemsList());
+//                order.setItems(items);
+//
+//                if (order.isConfirmed()) {
+//                    // String currentDate = LocalDate.now().toString();
+//                    String deliveryDate = LocalDate.now().plusDays(3).toString();
+//                    order.setDeliveryDate(deliveryDate.toString());
+//                }
+//            }
+//
+//            repository.save(order);
+//            OrderP orderP = getOrderPFields(order);
+//            OrderResponseP orderResponseP = OrderResponseP.newBuilder()
+//                   .setOrder(orderP).build();
+//
+//
+//           responseObserver.onNext(orderResponseP);
+//           responseObserver.onCompleted();
+//
+//        }
+//        catch (Exception e) {
+//            // If an exception occurs during customer creation, handle the error
+//            System.out.println(e.getMessage());
+//
+//            // Send an error response to the client with a descriptive message
+//            responseObserver.onError(new Throwable("Could not add an Order to the database"));
+//        }
     }
 
     @Override
@@ -191,33 +231,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         return items;
     }
 
-    private Order getOrderFields(OrderPRequest request) {
-        Address address = new Address(
-                request.getOrder().getAddress().getDoorNumber(),
-                request.getOrder().getAddress().getStreet(),
-                request.getOrder().getAddress().getCity(),
-                request.getOrder().getAddress().getState(),
-                request.getOrder().getAddress().getPostalCode(),
-                request.getOrder().getAddress().getCountry()
-        );
-
-        String customerUsername = request.getCustomerUsername();
-        Optional<Customer> customerToConvert = customerRepository.findByUserName(customerUsername);
-
-        Customer customer = customerToConvert.orElse(null);
-
-        if (customer == null) {
-            // If the customer doesn't exist, create a new customer
-            Set<Address> addresses = new HashSet<>();
-            addresses.add(address);
-            customer = new Customer(
-                    request.getOrder().getCustomer().getFirstName(),
-                    request.getOrder().getCustomer().getLastName(),
-                    request.getOrder().getCustomer().getUsername(),
-                    request.getOrder().getCustomer().getPassword(),
-                    request.getOrder().getCustomer().getRole(),addresses
-            );
-        }
+    private Set<Item> convertToSetOfItems(CreateOrderP request) {
 
         Set<Item> items = new HashSet<>();
         for (ItemP itemP : request.getItemsList()) {
@@ -242,14 +256,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             items.add(item);
 
         }
-
-        return new Order(
-                customer,
-                (Set<Item>) items,
-                address,
-                request.getOrder().getOrderDate(),
-                request.getOrder().getDeliveryDate()
-        );
+        return items;
     }
     private OrderP getOrderPFields(Order request) {
 

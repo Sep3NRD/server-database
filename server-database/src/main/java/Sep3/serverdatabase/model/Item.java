@@ -22,9 +22,9 @@ public class Item {
     private String category;
     private int stock;
     private String description;
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "order_id",nullable = true,insertable = false)
-    private Order order;
+//    @ManyToOne
+//    @JoinColumn(name = "order_id",nullable = true,insertable = false)
+//    private Order order;
 
 
     public Item(String name, double price, String category, int stock, String description) {
@@ -35,13 +35,13 @@ public class Item {
         this.description = description;
     }
 
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
+//    public Order getOrder() {
+//        return order;
+//    }
+//
+//    public void setOrder(Order order) {
+//        this.order = order;
+//    }
 
     public String getDescription() {
         return description;

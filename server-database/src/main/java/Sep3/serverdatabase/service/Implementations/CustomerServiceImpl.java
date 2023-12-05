@@ -102,7 +102,7 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
 
 
                 // Convert the address information to a proto message (AddressP)
-                AddressP addressP = AddressP.newBuilder()
+                AddressP addressP = AddressP.newBuilder().setId(address.getId())
                         .setDoorNumber(address.getDoorNumber())
                         .setCity(address.getCity())
                         .setPostalCode(address.getPostalCode())
