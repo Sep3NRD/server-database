@@ -41,6 +41,16 @@ public class Address {
 
     }
 
+    public Address(int doorNumber, String street, String city, String state, int postalCode, String country,Customer customer) {
+        this.doorNumber = doorNumber;
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.postalCode = postalCode;
+        this.country = country;
+        this.customer =customer;
+
+    }
 
     public Customer getCustomer() {
         return customer;
