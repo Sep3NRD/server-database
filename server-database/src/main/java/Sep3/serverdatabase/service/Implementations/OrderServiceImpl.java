@@ -50,7 +50,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             // Check and process items
             Set<Item> items = processItems(request.getItemsList());
             order.setItems(items);
-
+            // hello
             repository.save(order);
             OrderP orderP = getOrderPFields(order);
             OrderResponseP orderResponseP = OrderResponseP.newBuilder()
