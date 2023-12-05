@@ -13,7 +13,7 @@ public class Item {
             allocationSize = 1
     )
     @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
+            strategy = GenerationType.IDENTITY,
             generator = "item_sequence"
     )
     private int id;
@@ -22,8 +22,8 @@ public class Item {
     private String category;
     private int stock;
     private String description;
-    @ManyToOne(cascade = CascadeType.MERGE, fetch =  FetchType.EAGER)
-    @JoinColumn(name = "order_id") // This should be on the owning side
+    @ManyToOne
+    @JoinColumn(name = "order_id")
     private Order order;
 
 
@@ -33,6 +33,14 @@ public class Item {
         this.category = category;
         this.stock = stock;
         this.description = description;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
     }
 
     public String getDescription() {
