@@ -203,5 +203,9 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
             responseObserver.onError(new Throwable("Could not delete item from the database"));
         }
     }
+
+
+
+
 }
 

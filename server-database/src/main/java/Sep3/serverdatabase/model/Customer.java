@@ -3,6 +3,7 @@ package Sep3.serverdatabase.model;
 import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table
@@ -28,6 +29,10 @@ public class Customer {
     private Address address;
     private String role;
 
+
+    @OneToMany(mappedBy = "customer",fetch = FetchType.EAGER)
+    private Set<Address> otherAddresses;
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch =  FetchType.EAGER )
     private List<Order> orders;
 
@@ -42,6 +47,15 @@ public class Customer {
         this.password = password;
         this.address = address;
         this.role=role;
+    }
+
+
+    public Set<Address> getOtherAddresses() {
+        return otherAddresses;
+    }
+
+    public void setOtherAddresses(Set<Address> otherAddresses) {
+        this.otherAddresses = otherAddresses;
     }
 
     public List<Order> getOrders() {

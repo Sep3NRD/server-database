@@ -4,6 +4,7 @@ import Sep3.serverdatabase.model.Address;
 import Sep3.serverdatabase.model.Customer;
 import Sep3.serverdatabase.service.interfaces.AddressRepository;
 import Sep3.serverdatabase.service.interfaces.CustomerRepository;
+import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import sep3.server.*;
 
 import java.util.Optional;
+import java.util.Set;
 
 @GrpcService
 public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImplBase {
@@ -178,6 +180,41 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         } else {
             // If the customer is not found, send an error response
             String errorMessage = "Could not update customer with id: " + request.getId();
+
+            // Use gRPC Status.ABORTED to represent a client error (HTTP 409 Conflict)
+            responseObserver.onError(Status.ABORTED.withDescription(errorMessage).asException());
+        }
+    }
+
+    @Override
+    public void addNewAddress(NewAddress request, StreamObserver<Empty> responseObserver) {
+
+        Optional<Customer> optionalCustomer = repository.findByUserName(request.getUsername());
+        if (optionalCustomer.isPresent()) {
+            // If the customer is found, retrieve it and update its fields
+            Customer customer = optionalCustomer.get();
+
+            Address address = new Address(request.getDoorNumber(),
+                    request.getStreet(),request.getCity(),
+                    request.getState(),
+                    request.getPostalCode(),
+                    request.getCountry(),customer);
+
+            Set<Address> newAddresses = customer.getOtherAddresses();
+            newAddresses.add(address);
+            customer.setOtherAddresses(newAddresses);
+
+            addressRepository.save(address);
+            repository.save(customer);
+
+            Empty empty= Empty.newBuilder().build();
+            responseObserver.onNext(empty);
+            responseObserver.onCompleted();
+        }
+
+        else {
+            // If the customer is not found, send an error response
+            String errorMessage = "Could not add a new address ";
 
             // Use gRPC Status.ABORTED to represent a client error (HTTP 409 Conflict)
             responseObserver.onError(Status.ABORTED.withDescription(errorMessage).asException());

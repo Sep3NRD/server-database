@@ -38,10 +38,21 @@ message CustomerResponseP {
   CustomerP customer = 1;
 }
 
+message NewAddress{
+  int32 door_number = 1;
+  string street = 2;
+  string city = 3;
+  string state = 4;
+  int32 postal_code = 5;
+  string country = 6;
+  string username=7;
+}
+
 service CustomerService {
   rpc createCustomer(CustomerP) returns (CustomerResponseP){};
   rpc getCustomer(GetCustomerRequest) returns (CustomerResponseP){};
   rpc getCustomerByUsername(GetCustomerByUsername ) returns (CustomerResponseP){};
   rpc updateCustomer(CustomerP) returns (CustomerResponseP){};
   rpc deleteCustomer(google.protobuf.StringValue) returns (google.protobuf.Empty){};
+  rpc addNewAddress (NewAddress) returns (google.protobuf.Empty){};
 }
