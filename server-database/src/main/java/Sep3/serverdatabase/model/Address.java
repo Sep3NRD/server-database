@@ -23,7 +23,6 @@ public class Address {
         private String state;
         private int postalCode;
         private String country;
-
         @ManyToOne
         @JoinColumn(name = "customer_id")
         private Customer customer;
