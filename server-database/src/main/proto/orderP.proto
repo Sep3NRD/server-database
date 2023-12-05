@@ -30,7 +30,13 @@ message OrderPRequest {
   repeated ItemP items = 2;
   OrderP order = 3;
 }
+message ConfirmationResponse {
+  bool success = 1;
+  string deliveryDate=2;
+}
+
 
 service OrderService{
   rpc createOrder(OrderPRequest) returns (OrderResponseP){};
+  rpc confirmOrder(OrderP) returns (ConfirmationResponse){};
 }
