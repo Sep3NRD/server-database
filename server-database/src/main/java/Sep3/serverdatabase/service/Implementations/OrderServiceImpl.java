@@ -73,21 +73,34 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     }
 
     @Override
-    public void confirmOrder(OrderP request, StreamObserver<ConfirmationResponse> responseObserver){
+    public void confirmOrder(OrderIdToConfirm request, StreamObserver<ConfirmationResponse> responseObserver){
         try {
-            Order order = convertToOrder(request);
-            order.setConfirmed(true);
-            order.setDeliveryDate(LocalDate.now().plusDays(3).toString());
-            addressRepository.save(order.getAddress());
-            repository.save(order);
-            ConfirmationResponse response = ConfirmationResponse.newBuilder()
-                    .setSuccess(order.isConfirmed())
-                    .setDeliveryDate(order.getDeliveryDate())
-                    .build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+            Optional<Order> optionalOrder = repository.findById(request.getOrderId());
+
+            if (optionalOrder.isPresent()) {
+                Order order = optionalOrder.get();
+                order.setConfirmed(true);
+                order.setDeliveryDate(LocalDate.now().plusDays(3).toString());
+
+//                // Assuming order has a reference to an address
+//                Address address = order.getAddress();
+//                addressRepository.save(address);
+
+                repository.save(order);
+
+                ConfirmationResponse response = ConfirmationResponse.newBuilder()
+                        .setSuccess(order.isConfirmed())
+                        .setDeliveryDate(order.getDeliveryDate())
+                        .build();
+
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            } else {
+                responseObserver.onError(Status.NOT_FOUND.withDescription("Order not found with ID: " + request.getOrderId()).asException());
+            }
+
         }
-        catch (Exception e) {
+        catch(Exception e){
             System.out.println("Error in confirming the order");
             e.printStackTrace();
             // Handle any exceptions or errors
