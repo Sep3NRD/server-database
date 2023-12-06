@@ -37,8 +37,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
     @Override
     public void createOrder(CreateOrderP request, StreamObserver<SuccessMessage> responseObserver){
-        System.out.println(request.getItems(0).getName());
-        System.out.println(request.getItems(0).getQuantity());
 
         try {
             Customer finalCustomer = null;
@@ -98,27 +96,57 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
     @Override
     public void getAllOrders(Empty request, StreamObserver<AllOrdersResponse> responseObserver){
-        List<Order> orders = repository.findAll();
-        AllOrdersResponse.Builder responseBuilder = AllOrdersResponse.newBuilder();
+        try{
+            List<Order> orders = repository.findAll();
 
-        for (Order order : orders) {
-            Set<Address> addresses = order.getCustomer().getOtherAddresses();
+            AllOrdersResponse.Builder responseBuilder = AllOrdersResponse.newBuilder();
 
-            OrderP.Builder orderPBuilder = OrderP.newBuilder()
-                    .setId(order.getId())
-                    .setOrderDate(order.getOrderDate())
-                    .setDeliveryDate(order.getDeliveryDate())
-                    .setIsConfirmed(order.isConfirmed())
-                    .setTotalPrice(order.getTotalPrice());
+            for (Order order : orders) {
+                Set<Address> addresses = order.getCustomer().getOtherAddresses();
 
-            Customer customer = order.getCustomer();
-            CustomerP.Builder customerPBuilder = CustomerP.newBuilder()
-                    .setId(customer.getId())
-                    .setFirstName(customer.getFirstName())
-                    .setLastName(customer.getLastName())
-                    .setUsername(customer.getUserName());
+                OrderP.Builder orderPBuilder = OrderP.newBuilder()
+                        .setId(order.getId())
+                        .setOrderDate(order.getOrderDate())
+                        .setDeliveryDate(order.getDeliveryDate())
+                        .setIsConfirmed(order.isConfirmed())
+                        .setTotalPrice(order.getTotalPrice());
 
-            for (Address address : addresses) {
+                Customer customer = order.getCustomer();
+                CustomerP.Builder customerPBuilder = CustomerP.newBuilder()
+                        .setId(customer.getId())
+                        .setFirstName(customer.getFirstName())
+                        .setLastName(customer.getLastName())
+                        .setUsername(customer.getUserName());
+
+                for (Address address : addresses) {
+                    AddressP addressP = AddressP.newBuilder()
+                            .setId(address.getId())
+                            .setDoorNumber(address.getDoorNumber())
+                            .setCity(address.getCity())
+                            .setPostalCode(address.getPostalCode())
+                            .setState(address.getState())
+                            .setStreet(address.getStreet())
+                            .setCountry(address.getCountry())
+                            .build();
+                    customerPBuilder.setAddress(addressP);
+                }
+
+                customerPBuilder.setAddress(customerPBuilder.getAddress());
+                orderPBuilder.setCustomer(customerPBuilder.build());
+
+                for (Item item : order.getItems()) {
+                    ItemP itemP = ItemP.newBuilder()
+                            .setItemId(item.getId())
+                            .setPrice(item.getPrice())
+                            .setName(item.getName())
+                            .setStock(item.getStock())
+                            .setCategory(item.getCategory())
+                            .setDescription(item.getDescription())
+                            .build();
+                    orderPBuilder.addItems(itemP);
+                }
+
+                Address address = order.getAddress();
                 AddressP addressP = AddressP.newBuilder()
                         .setId(address.getId())
                         .setDoorNumber(address.getDoorNumber())
@@ -128,45 +156,108 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                         .setStreet(address.getStreet())
                         .setCountry(address.getCountry())
                         .build();
-                customerPBuilder.setAddress(addressP);
+                orderPBuilder.setAddress(addressP);
+
+                OrderP orderP = orderPBuilder.build();
+                responseBuilder.addOrdersP(orderP);
             }
 
-            customerPBuilder.setAddress(customerPBuilder.getAddress());
-            orderPBuilder.setCustomer(customerPBuilder.build());
+            AllOrdersResponse response = responseBuilder.build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
 
-            for (Item item : order.getItems()) {
-                ItemP itemP = ItemP.newBuilder()
-                        .setItemId(item.getId())
-                        .setPrice(item.getPrice())
-                        .setName(item.getName())
-                        .setStock(item.getStock())
-                        .setCategory(item.getCategory())
-                        .setDescription(item.getDescription())
-                        .build();
-                orderPBuilder.addItems(itemP);
-            }
-
-            Address address = order.getAddress();
-            AddressP addressP = AddressP.newBuilder()
-                    .setId(address.getId())
-                    .setDoorNumber(address.getDoorNumber())
-                    .setCity(address.getCity())
-                    .setPostalCode(address.getPostalCode())
-                    .setState(address.getState())
-                    .setStreet(address.getStreet())
-                    .setCountry(address.getCountry())
-                    .build();
-            orderPBuilder.setAddress(addressP);
-
-            OrderP orderP = orderPBuilder.build();
-            responseBuilder.addOrdersP(orderP);
+            // Send an error response to the client with a descriptive message
+            responseObserver.onError(new Throwable("Could not get the order from database"));
         }
 
-        AllOrdersResponse response = responseBuilder.build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
     }
 
+    @Override
+    public void getAllOrdersWithCustomerId(CustomerIdRequest request, StreamObserver<AllOrdersResponse> responseObserver){
+        try{
+            
+            Optional<Customer> optionalCustomer = customerRepository.findById(request.getCustomerId());
+            if (optionalCustomer.isPresent()) {
+                Customer customer = optionalCustomer.get();
+                List<Order> orders = customer.getOrders();
+
+                AllOrdersResponse.Builder responseBuilder = AllOrdersResponse.newBuilder();
+
+                for (Order order : orders) {
+                    Set<Address> addresses = order.getCustomer().getOtherAddresses();
+
+                    OrderP.Builder orderPBuilder = OrderP.newBuilder()
+                            .setId(order.getId())
+                            .setOrderDate(order.getOrderDate())
+                            .setDeliveryDate(order.getDeliveryDate())
+                            .setIsConfirmed(order.isConfirmed())
+                            .setTotalPrice(order.getTotalPrice());
+
+                    Customer customerObj = order.getCustomer();
+                    CustomerP.Builder customerPBuilder = CustomerP.newBuilder()
+                            .setId(customerObj.getId())
+                            .setFirstName(customerObj.getFirstName())
+                            .setLastName(customerObj.getLastName())
+                            .setUsername(customerObj.getUserName());
+
+                    for (Address address : addresses) {
+                        AddressP addressP = AddressP.newBuilder()
+                                .setId(address.getId())
+                                .setDoorNumber(address.getDoorNumber())
+                                .setCity(address.getCity())
+                                .setPostalCode(address.getPostalCode())
+                                .setState(address.getState())
+                                .setStreet(address.getStreet())
+                                .setCountry(address.getCountry())
+                                .build();
+                        customerPBuilder.setAddress(addressP);
+                    }
+
+                    customerPBuilder.setAddress(customerPBuilder.getAddress());
+                    orderPBuilder.setCustomer(customerPBuilder.build());
+
+                    for (Item item : order.getItems()) {
+                        ItemP itemP = ItemP.newBuilder()
+                                .setItemId(item.getId())
+                                .setPrice(item.getPrice())
+                                .setName(item.getName())
+                                .setStock(item.getStock())
+                                .setCategory(item.getCategory())
+                                .setDescription(item.getDescription())
+                                .build();
+                        orderPBuilder.addItems(itemP);
+                    }
+
+                    Address address = order.getAddress();
+                    AddressP addressP = AddressP.newBuilder()
+                            .setId(address.getId())
+                            .setDoorNumber(address.getDoorNumber())
+                            .setCity(address.getCity())
+                            .setPostalCode(address.getPostalCode())
+                            .setState(address.getState())
+                            .setStreet(address.getStreet())
+                            .setCountry(address.getCountry())
+                            .build();
+                    orderPBuilder.setAddress(addressP);
+
+                    OrderP orderP = orderPBuilder.build();
+                    responseBuilder.addOrdersP(orderP);
+                }
+
+                AllOrdersResponse response = responseBuilder.build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            }
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            // Send an error response to the client with a descriptive message
+            responseObserver.onError(new Throwable("Could not get the order from database"));
+        }
+    }
     private Order convertToOrder(OrderP request) {
         Address address = new Address(
                 request.getAddress().getDoorNumber(),

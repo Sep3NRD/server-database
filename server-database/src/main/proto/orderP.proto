@@ -49,10 +49,13 @@ message ConfirmationResponse {
 message AllOrdersResponse{
   repeated OrderP ordersP =1;
 }
-
+message CustomerIdRequest{
+  int32 customerId = 1;
+}
 
 service OrderService{
   rpc createOrder(CreateOrderP) returns (SuccessMessage){};
   rpc confirmOrder(OrderP) returns (ConfirmationResponse){};
   rpc getAllOrders(google.protobuf.Empty) returns (AllOrdersResponse){};
+  rpc getAllOrdersWithCustomerId (CustomerIdRequest) returns (AllOrdersResponse){};
 }
