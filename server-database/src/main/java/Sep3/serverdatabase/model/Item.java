@@ -22,9 +22,10 @@ public class Item {
     private String category;
     private int stock;
     private String description;
-//    @ManyToOne
-//    @JoinColumn(name = "order_id",nullable = true,insertable = false)
-//    private Order order;
+
+    @Transient
+    private int quantity;
+
 
 
     public Item(String name, double price, String category, int stock, String description) {
@@ -33,15 +34,20 @@ public class Item {
         this.category = category;
         this.stock = stock;
         this.description = description;
+        this.quantity=0;
     }
 
-//    public Order getOrder() {
-//        return order;
-//    }
-//
-//    public void setOrder(Order order) {
-//        this.order = order;
-//    }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
     public String getDescription() {
         return description;

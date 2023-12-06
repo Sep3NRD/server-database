@@ -37,6 +37,8 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     @Override
     public void createOrder(CreateOrderP request, StreamObserver<SuccessMessage> responseObserver){
 
+        System.out.println(request.getItems(0).getQuantity());
+
         try {
             Customer finalCustomer = null;
             Optional<Customer> customerFromDatabase = customerRepository.findByUserName(request.getCustomerUsername());
@@ -202,34 +204,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
 
 
-    private Set<Item> processItems(List<ItemP> itemPList) {
-        Set<Item> items = new HashSet<>();
 
-        for (ItemP itemP : itemPList) {
-            // Check if the item with the same ID already exists in the database
-            Optional<Item> existingItem = itemRepository.findById(itemP.getItemId());
-
-            Item item;
-            if (existingItem.isPresent()) {
-                // If the item exists, reuse it
-                item = existingItem.get();
-            } else {
-                // If the item doesn't exist, create a new one
-                item = new Item(
-                        itemP.getName(),
-                        itemP.getPrice(),
-                        itemP.getCategory(),
-                        itemP.getStock(),
-                        itemP.getDescription()
-                );
-            }
-
-            // Add the item to the set
-            items.add(item);
-        }
-
-        return items;
-    }
 
     private Set<Item> convertToSetOfItems(CreateOrderP request) {
 

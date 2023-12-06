@@ -14,6 +14,7 @@ message ItemP{
   double price = 4;
   int32 stock = 5;
   int32 itemId=6;
+  int32 quantity=7;
 }
 
 message GetItemRequest{

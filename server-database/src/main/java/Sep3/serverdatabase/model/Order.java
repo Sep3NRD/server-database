@@ -25,15 +25,16 @@ public class Order {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @OneToMany   //(mappedBy = "order", cascade = CascadeType.MERGE, orphanRemoval = true)
-    @Column
+    @ManyToMany
+    @JoinTable(
+            name = "order_item",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
     private Set<Item> items;
 
 
-//    @ElementCollection
-//    @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
-//    @Column(name = "item_id")
-//    private Set<Integer> itemIds;
+
 
     @ManyToOne
     @JoinColumn(name = "address_id")
@@ -50,7 +51,6 @@ public class Order {
     public Order (Customer customer, Set<Item>  items,Address address, String orderDate, String deliveryDate){
         this.customer = customer;
         this.items = items;
-//        this.itemIds = extractItemIds(items);
         this.adress = address;
         this.orderDate = orderDate;
         this.deliveryDate = deliveryDate;
@@ -62,10 +62,6 @@ public class Order {
                 .map(Item::getId)
                 .collect(Collectors.toSet());
     }
-
-//    public Set<Integer> getItemIds() {
-//        return itemIds;
-//    }
 
     public int getId() {
         return id;
