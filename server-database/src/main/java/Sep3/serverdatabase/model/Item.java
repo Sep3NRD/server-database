@@ -2,6 +2,8 @@ package Sep3.serverdatabase.model;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 @Table
 public class Item {
@@ -22,6 +24,11 @@ public class Item {
     private String category;
     private int stock;
     private String description;
+
+
+    @ManyToMany(mappedBy = "items")
+    @Transient
+    private Set<Order> orders ;
 
     @Transient
     private int quantity;
