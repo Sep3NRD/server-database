@@ -36,7 +36,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
     @Override
     public void createOrder(CreateOrderP request, StreamObserver<SuccessMessage> responseObserver){
-
+        System.out.println(request.getItems(0).getName());
         System.out.println(request.getItems(0).getQuantity());
 
         try {
@@ -69,16 +69,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             // Send an error response to the client with a descriptive message
             responseObserver.onError(new Throwable("Could not add an Order to the database"));
         }
-
-
-
-
-
-
-
-
-
-
 
 //            Order order = getOrderFields(request);
 //
@@ -207,31 +197,60 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
 
     private Set<Item> convertToSetOfItems(CreateOrderP request) {
-
         Set<Item> items = new HashSet<>();
-        for (ItemP itemP : request.getItemsList()) {
-            // Check if the item with the same ID already exists in the database
-            Optional<Item> existingItem = itemRepository.findById(itemP.getItemId());
 
-            Item item;
+        for (ItemP orderItemP : request.getItemsList()) {
+            Optional<Item> existingItem = items.stream()
+                    .filter(item -> item.getId()==orderItemP.getItemId())
+                    .findFirst();
+
             if (existingItem.isPresent()) {
-                // If the item exists, reuse it
-                item = existingItem.get();
+                // Item already exists in the set, update its quantity
+                Item item = existingItem.get();
+                int newQuantity = item.getQuantity() + orderItemP.getQuantity();
+                item.setQuantity(newQuantity);
             } else {
-                // If the item doesn't exist, create a new one
-                item = new Item(
-                        itemP.getName(),
-                        itemP.getPrice(),
-                        itemP.getCategory(),
-                        itemP.getStock(),
-                        itemP.getDescription()
+                // Item does not exist in the set, add a new one with the specified quantity
+                Item newItem = new Item(
+                        orderItemP.getName(),
+                        orderItemP.getPrice(),
+                        orderItemP.getCategory(),
+                        orderItemP.getStock(),
+                        orderItemP.getDescription()
                 );
+                newItem.setId(orderItemP.getItemId());
+                newItem.setQuantity(orderItemP.getQuantity());
+                items.add(newItem);
             }
-
-            items.add(item);
-
         }
+
         return items;
+
+//
+//        Set<Item> items = new HashSet<>();
+//        for (ItemP itemP : request.getItemsList()) {
+//            // Check if the item with the same ID already exists in the database
+//            Optional<Item> existingItem = itemRepository.findById(itemP.getItemId());
+//
+//            Item item;
+//            if (existingItem.isPresent()) {
+//                // If the item exists, reuse it
+//                item = existingItem.get();
+//            } else {
+//                // If the item doesn't exist, create a new one
+//                item = new Item(
+//                        itemP.getName(),
+//                        itemP.getPrice(),
+//                        itemP.getCategory(),
+//                        itemP.getStock(),
+//                        itemP.getDescription()
+//                );
+//            }
+//
+//            items.add(item);
+//
+//        }
+//        return items;
     }
     private OrderP getOrderPFields(Order request) {
 
