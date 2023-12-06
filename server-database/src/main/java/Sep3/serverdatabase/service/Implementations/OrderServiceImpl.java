@@ -13,6 +13,7 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import sep3.server.*;
 
 import java.time.LocalDate;
@@ -95,6 +96,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     }
 
     @Override
+    @Transactional
     public void getAllOrders(Empty request, StreamObserver<AllOrdersResponse> responseObserver){
         try{
             List<Order> orders = repository.findAll();
@@ -178,7 +180,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     @Override
     public void getAllOrdersWithCustomerId(CustomerIdRequest request, StreamObserver<AllOrdersResponse> responseObserver){
         try{
-            
+
             Optional<Customer> optionalCustomer = customerRepository.findById(request.getCustomerId());
             if (optionalCustomer.isPresent()) {
                 Customer customer = optionalCustomer.get();
