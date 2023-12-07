@@ -68,7 +68,6 @@ public class ItemServiceImpl extends ItemServiceGrpc.ItemServiceImplBase {
 
        try{
            // Log the start of the method execution
-           LOG.info(">>> executing getProduct()..");
            // Retrieve all items from the repository
            List<Item> items = repository.findAll();
 

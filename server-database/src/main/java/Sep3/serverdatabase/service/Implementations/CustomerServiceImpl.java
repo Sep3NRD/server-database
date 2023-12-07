@@ -153,7 +153,6 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
         if (optionalCustomer.isPresent() && optionalCustomer.get().getPassword().equals(request.getPassword())) {
             // If authentication is successful, retrieve the customer
             Customer customer = optionalCustomer.get();
-
             // Transform the customer object into a proto message (CustomerP)
             CustomerP customerP = getCustomerPFields(customer);
 
