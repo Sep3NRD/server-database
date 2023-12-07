@@ -13,6 +13,7 @@ import sep3.server.*;
 
 import javax.transaction.Transactional;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -248,6 +249,49 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
             responseObserver.onError(Status.ABORTED.withDescription(errorMessage).asException());
         }
     }
+
+    @Override
+    public void getAddresses(GetCustomerByUsername request, StreamObserver<GetAddressesByUsername> responseObserver){
+
+
+        Optional<Customer> customer = repository.findByUserName(request.getUsername());
+        Set<Address> addressesSet = new HashSet<>();
+        if (customer.isPresent()){
+
+            addressesSet=customer.get().getOtherAddresses();
+
+        }
+
+        try {
+            GetAddressesByUsername.Builder responseBuilder = GetAddressesByUsername.newBuilder();
+
+            for (Address address : addressesSet) {
+                responseBuilder.addAddresses(AddressP.newBuilder()
+                        .setId(address.getId())
+                        .setDoorNumber(address.getDoorNumber())
+                        .setPostalCode(address.getPostalCode())
+                        .setCity(address.getCity())
+                        .setCountry(address.getCountry())
+                        .setState(address.getState())
+                        .setStreet(address.getStreet())
+                        .build());
+            }
+
+            GetAddressesByUsername response = responseBuilder.setResponse("Success").build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+        catch (Exception e){
+            String errorMessage = "Could not get other addresses";
+
+            // Use gRPC Status.ABORTED to represent a client error (HTTP 409 Conflict)
+            responseObserver.onError(Status.ABORTED.withDescription(errorMessage).asException());
+        }
+
+    }
+
+
 
 
 
