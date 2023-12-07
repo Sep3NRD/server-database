@@ -40,7 +40,8 @@ public class Customer {
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch =  FetchType.EAGER )
     private List<Order> orders;
-
+    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, fetch =  FetchType.EAGER)
+    private WishList wishLists;
 
     public Customer() {
     }
@@ -66,7 +67,13 @@ public class Customer {
     }
 
 
+    public WishList getWishLists() {
+        return wishLists;
+    }
 
+    public void setWishLists(WishList wishLists) {
+        this.wishLists = wishLists;
+    }
 
     public Set<Address> getOtherAddresses() {
         return otherAddresses;

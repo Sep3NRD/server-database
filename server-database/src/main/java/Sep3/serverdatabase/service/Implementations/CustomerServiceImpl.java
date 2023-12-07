@@ -181,7 +181,7 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
             // If the customer is found, retrieve it and update its fields
             Customer customer = optionalCustomer.get();
             customer = getCustomerFields(request);
-            
+
 
             // Extract the address from the updated customer and set its ID
             Optional<Address> optionalAddress = customer.getOtherAddresses().stream().findFirst();

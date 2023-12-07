@@ -25,14 +25,15 @@ public class Item {
     private int stock;
     private String description;
 
-
     @ManyToMany(mappedBy = "items")
     @Transient
     private Set<Order> orders ;
-
     @Transient
     private int quantity;
 
+    @ManyToMany(mappedBy = "items")
+    @Transient
+    private Set<WishList> wishLists ;
 
 
     public Item(String name, double price, String category, int stock, String description) {
@@ -43,7 +44,6 @@ public class Item {
         this.description = description;
         this.quantity=0;
     }
-
 
 
     public void setId(int id) {
