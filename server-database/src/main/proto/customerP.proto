@@ -49,6 +49,11 @@ message NewAddress{
   string username=7;
 }
 
+message GetAddressesByUsername{
+  repeated AddressP addresses=1;
+  string response=2;
+}
+
 service CustomerService {
   rpc createCustomer(CustomerP) returns (CustomerResponseP){};
   rpc getCustomer(GetCustomerRequest) returns (CustomerResponseP){};
@@ -56,4 +61,5 @@ service CustomerService {
   rpc updateCustomer(CustomerP) returns (CustomerResponseP){};
   rpc deleteCustomer(google.protobuf.StringValue) returns (google.protobuf.Empty){};
   rpc addNewAddress (NewAddress) returns (google.protobuf.Empty){};
+  rpc GetAddresses(GetCustomerByUsername) returns (GetAddressesByUsername){};
 }
