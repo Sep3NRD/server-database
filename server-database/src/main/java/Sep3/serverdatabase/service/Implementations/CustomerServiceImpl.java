@@ -190,6 +190,8 @@ public class CustomerServiceImpl extends CustomerServiceGrpc.CustomerServiceImpl
             // Update additional fields of the customer
             customer.setRole(request.getRole());
             customer.setId(request.getId());
+            address.setCustomer(customer);
+            address.setId(request.getAddress().getId());
 
             // Save the updated address and customer to their respective repositories
             addressRepository.save(address);
