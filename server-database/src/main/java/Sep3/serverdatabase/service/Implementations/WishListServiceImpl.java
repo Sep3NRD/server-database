@@ -2,6 +2,7 @@ package Sep3.serverdatabase.service.Implementations;
 
 import Sep3.serverdatabase.model.Customer;
 import Sep3.serverdatabase.model.Item;
+import Sep3.serverdatabase.model.Order;
 import Sep3.serverdatabase.model.WishList;
 import Sep3.serverdatabase.service.interfaces.CustomerRepository;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
@@ -11,12 +12,11 @@ import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import sep3.server.SuccessResponse;
-import sep3.server.WishListRequest;
-import sep3.server.WishListServiceGrpc;
+import sep3.server.*;
 
 import javax.transaction.Transactional;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -93,4 +93,38 @@ public class WishListServiceImpl extends WishListServiceGrpc.WishListServiceImpl
         }
     }
 
+    @Override
+    public void getWishList(GetWishListRequest request,  StreamObserver<GetWishListResponse> responseObserver){
+        try{
+            Optional<Customer> optionalCustomer = customerRepository.findByUserName(request.getUsername());
+            System.out.println(optionalCustomer.isPresent());
+            if (optionalCustomer.isPresent()){
+                Customer customer = optionalCustomer.get();
+                WishList wishLists = customer.getWishLists();
+
+                GetWishListResponse.Builder responseBuilder = GetWishListResponse.newBuilder();
+                for (Item item : wishLists.getItems()) {
+                    ItemP itemP = ItemP.newBuilder()
+                            .setItemId(item.getId())
+                            .setPrice(item.getPrice())
+                            .setName(item.getName())
+                            .setStock(item.getStock())
+                            .setCategory(item.getCategory())
+                            .setDescription(item.getDescription())
+                            .build();
+                    responseBuilder.addItems(itemP);
+                }
+                GetWishListResponse response = responseBuilder.build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            }
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            // Send an error response to the client with a descriptive message
+            responseObserver.onError(new
+                    Throwable("Could not get the wish list " +
+                    "from database"));
+        }
+    }
 }

@@ -20,7 +20,14 @@ message WishListRequest{
 message SuccessResponse{
   string message=1;
 }
+message GetWishListRequest{
+  string username=1;
+}
+message GetWishListResponse{
+  repeated ItemP items=1;
+}
 
 service WishListService{
   rpc addToWishList(WishListRequest) returns (SuccessResponse){};
+  rpc getWishList(GetWishListRequest) returns (GetWishListResponse){};
 }
