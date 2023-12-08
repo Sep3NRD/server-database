@@ -6,6 +6,7 @@ import Sep3.serverdatabase.model.WishList;
 import Sep3.serverdatabase.service.interfaces.CustomerRepository;
 import Sep3.serverdatabase.service.interfaces.ItemRepository;
 import Sep3.serverdatabase.service.interfaces.WishListRepository;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import sep3.server.SuccessResponse;
 import sep3.server.WishListRequest;
 import sep3.server.WishListServiceGrpc;
 
+import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -33,31 +35,45 @@ public class WishListServiceImpl extends WishListServiceGrpc.WishListServiceImpl
 
     @Override
     public void addToWishList(WishListRequest request, StreamObserver<SuccessResponse> responseObserver) {
-        System.out.println(request.getCustomerId());
+
+
         try {
             // Step 1: Find the customer and the item
-            Optional<Customer> customerFromDatabase = customerRepository.findById(request.getCustomerId());
+            Optional<Customer> customerFromDatabase = customerRepository.findByUserName(request.getUsername());
             Optional<Item> itemFromDatabase = itemRepository.findById(request.getItemId());
-            System.out.println(">>>>>>"+ customerFromDatabase.get().getUserName() + itemFromDatabase.get().getId());
+
+
             if (customerFromDatabase.isPresent() && itemFromDatabase.isPresent()) {
+
                 Customer finalCustomer = customerFromDatabase.get();
                 Item finalItem = itemFromDatabase.get();
-                System.out.println("hello");
+
+
                 // Step 2: Check if the customer already has a wish list
                 Optional<WishList> existingWishList = repository.findByCustomer(finalCustomer);
-                System.out.println(">>>"+existingWishList.toString());
-                if (!existingWishList.isPresent()) {
+                if (existingWishList.isPresent())
+                {
                     WishList wishList = existingWishList.get();
-                    wishList.getItems().add(finalItem);
-                    repository.save(wishList);
+                    boolean itemExists = wishList.getItems().stream()
+                            .anyMatch(item -> item.getId() == request.getItemId());
+                    if (itemExists){
+                        responseObserver.onError(Status.ABORTED.withDescription("This item is already on you wishlist").asException());
+                    }
                 }
-                else {
-                    System.out.println("hello else");
+
+
+                if (existingWishList.isEmpty()) {
                     // Customer does not have a wish list, create a new one
                     Set<Item> finalItems = new HashSet<>();
                     finalItems.add(finalItem);
                     WishList newWishList = new WishList(finalCustomer, finalItems);
                     repository.save(newWishList);
+                }
+                else {
+                    WishList wishList = existingWishList.get();
+                    System.out.println("hello i am here");
+                    wishList.getItems().add(finalItem);
+                    repository.save(wishList);
                 }
 
                 SuccessResponse successResponse = SuccessResponse.newBuilder()

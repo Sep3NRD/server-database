@@ -22,7 +22,7 @@ public class WishList {
     @OneToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "wish_list_item",
             joinColumns = @JoinColumn(name = "wishList_id"),

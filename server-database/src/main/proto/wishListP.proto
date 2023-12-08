@@ -15,7 +15,7 @@ message WishListP {
 }
 message WishListRequest{
   int32 itemId=1;
-  int32 customerId=2;
+  string username=2;
 }
 message SuccessResponse{
   string message=1;
