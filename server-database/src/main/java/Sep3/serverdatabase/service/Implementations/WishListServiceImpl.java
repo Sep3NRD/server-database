@@ -97,7 +97,6 @@ public class WishListServiceImpl extends WishListServiceGrpc.WishListServiceImpl
     public void getWishList(GetWishListRequest request,  StreamObserver<GetWishListResponse> responseObserver){
         try{
             Optional<Customer> optionalCustomer = customerRepository.findByUserName(request.getUsername());
-            System.out.println(optionalCustomer.isPresent());
             if (optionalCustomer.isPresent()){
                 Customer customer = optionalCustomer.get();
                 WishList wishLists = customer.getWishLists();
