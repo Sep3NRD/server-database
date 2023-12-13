@@ -40,6 +40,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     public void createOrder(CreateOrderP request, StreamObserver<SuccessMessage> responseObserver){
 
         try {
+            // Retrieve customer and address from the database
             Customer finalCustomer = null;
             Optional<Customer> customerFromDatabase = customerRepository.findByUserName(request.getCustomerUsername());
             if (customerFromDatabase.isPresent())
@@ -49,12 +50,13 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             Optional<Address> addressFromDatabase = addressRepository.findById(request.getAddressId());
             if (addressFromDatabase.isPresent())
                 finalAddress = addressFromDatabase.get();
-
+            // Convert request items to a set of items
             Set<Item> finalItems = convertToSetOfItems(request);
-
+            // Create an order and save it to the database
             Order orderToSave = new Order(finalCustomer, finalItems, finalAddress, request.getOrderDate(), "Waiting for confirmation");
 
             repository.save(orderToSave);
+            // Send a success message to the client
             SuccessMessage successMessage = SuccessMessage.newBuilder().setMessage("SUCCESS").build();
 
             responseObserver.onNext(successMessage);
@@ -63,7 +65,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         }
         catch (Exception e)
         {
-            // f an exception occurs during customer creation, handle the error
+            // if an exception occurs during customer creation, handle the error
             System.out.println(e.getMessage());
 
             // Send an error response to the client with a descriptive message
@@ -112,8 +114,9 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     @Transactional
     public void getAllOrders(Empty request, StreamObserver<AllOrdersResponse> responseObserver){
         try{
+            // Retrieve all orders from the database
             List<Order> orders = repository.findAll();
-
+            // Build a response containing order details
             AllOrdersResponse.Builder responseBuilder = AllOrdersResponse.newBuilder();
 
             for (Order order : orders) {
@@ -176,12 +179,13 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
                 OrderP orderP = orderPBuilder.build();
                 responseBuilder.addOrdersP(orderP);
             }
-
+            // Send the response to the client
             AllOrdersResponse response = responseBuilder.build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
         catch (Exception e){
+            // Handle exceptions and send an error response to the client
             System.out.println(e.getMessage());
 
             // Send an error response to the client with a descriptive message

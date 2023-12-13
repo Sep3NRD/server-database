@@ -93,15 +93,24 @@ public class WishListServiceImpl extends WishListServiceGrpc.WishListServiceImpl
         }
     }
 
+
+    /**
+     * Retrieves the wish list for a specific customer based on the provided username.
+     *
+     * @param request          The request containing the customer's username.
+     * @param responseObserver The response observer for sending the wish list response to the client.
+     */
     @Override
     public void getWishList(GetWishListRequest request,  StreamObserver<GetWishListResponse> responseObserver){
         try{
+            // Retrieve the customer from the database based on the provided username
             Optional<Customer> optionalCustomer = customerRepository.findByUserName(request.getUsername());
-            System.out.println(optionalCustomer.isPresent());
+
             if (optionalCustomer.isPresent()){
                 Customer customer = optionalCustomer.get();
+                // Retrieve the wish list associated with the customer
                 WishList wishLists = customer.getWishLists();
-
+                // Build the response containing items from the wish list
                 GetWishListResponse.Builder responseBuilder = GetWishListResponse.newBuilder();
                 for (Item item : wishLists.getItems()) {
                     ItemP itemP = ItemP.newBuilder()
@@ -114,6 +123,7 @@ public class WishListServiceImpl extends WishListServiceGrpc.WishListServiceImpl
                             .build();
                     responseBuilder.addItems(itemP);
                 }
+                // Send the wish list response to the client
                 GetWishListResponse response = responseBuilder.build();
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
